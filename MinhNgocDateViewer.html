@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minh Ngọc Date Viewer</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; background: #f4f6f8; color: #1f2937; }
+    .card { background: #fff; border: 1px solid #d1d5db; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+    .row { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    input, button { font: inherit; padding: 8px 10px; }
+    button { border: 1px solid #9ca3af; border-radius: 8px; cursor: pointer; background: #eef2ff; }
+    button.primary { background: #2563eb; border-color: #1d4ed8; color: #fff; }
+    #viewerFrame { width: 100%; height: 74vh; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; }
+    #status { font-weight: 700; }
+    .warn { color: #b45309; }
+    .ok { color: #059669; }
+    .mono { font-family: Consolas, monospace; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Xem nội dung Minh Ngọc theo ngày</h2>
+    <div class="row">
+      <div class="field">
+        <label>Ngày</label>
+        <input id="ngay" type="date" />
+      </div>
+      <div class="field">
+        <button id="btnLoad" class="primary">Hiển thị nội dung</button>
+      </div>
+      <div class="field">
+        <button id="btnOpenNewTab">Mở tab mới</button>
+      </div>
+      <div class="field">
+        <label><input id="chkAutoOpenTab" type="checkbox" checked /> Tự mở tab mới khi hiển thị</label>
+      </div>
+    </div>
+
+    <p id="status" class="warn">Sẵn sàng.</p>
+    <p class="warn">Lưu ý: Nếu khung trắng, website đích đang chặn iframe. Anh xem ở tab mới.</p>
+    <div><strong>URL:</strong> <span id="urlView" class="mono"></span></div>
+  </div>
+
+  <div class="card">
+    <iframe id="viewerFrame" title="Minh Ngọc Viewer"></iframe>
+  </div>
+
+  <script>
+    function getTodayIso() {
+      var d = new Date();
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      return d.getFullYear() + '-' + mm + '-' + dd;
+    }
+
+    function buildUrl(isoDate) {
+      var p = (isoDate || '').split('-');
+      if (p.length !== 3) return '';
+      var slug = p[2] + '-' + p[1] + '-' + p[0];
+      return 'https://www.minhngoc.net/ket-qua-xo-so/' + slug + '.html';
+    }
+
+    function setStatus(cls, msg) {
+      var el = document.getElementById('status');
+      el.className = cls;
+      el.textContent = msg;
+    }
+
+    function loadByDate() {
+      var ngay = document.getElementById('ngay').value;
+      if (!ngay) {
+        setStatus('warn', 'Chưa chọn ngày.');
+        return;
+      }
+
+      var url = buildUrl(ngay);
+      if (!url) {
+        setStatus('warn', 'Ngày không hợp lệ.');
+        return;
+      }
+
+      document.getElementById('urlView').textContent = url;
+      document.getElementById('viewerFrame').src = url;
+
+      if (document.getElementById('chkAutoOpenTab').checked) {
+        window.open(url, '_blank');
+        setStatus('ok', 'Đã nạp iframe và tự mở tab mới (vì nhiều site chặn iframe).');
+      } else {
+        setStatus('ok', 'Đã nạp URL vào iframe.');
+      }
+    }
+
+    document.getElementById('btnLoad').addEventListener('click', loadByDate);
+    document.getElementById('btnOpenNewTab').addEventListener('click', function () {
+      var ngay = document.getElementById('ngay').value;
+      var url = buildUrl(ngay);
+      if (!url) {
+        setStatus('warn', 'Chưa có URL hợp lệ để mở.');
+        return;
+      }
+      window.open(url, '_blank');
+    });
+
+    window.addEventListener('load', function () {
+      document.getElementById('ngay').value = getTodayIso();
+      loadByDate();
+    });
+  </script>
+</body>
+</html>
