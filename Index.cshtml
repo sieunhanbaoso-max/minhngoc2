@@ -1,0 +1,2869 @@
+﻿@{
+    Layout = null;
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <title>Load dữ liệu Minh Ngọc</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+            color: #222;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .page-wrap {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 18px;
+        }
+
+        h2 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 14px;
+        }
+
+        .layout-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 22px;
+        }
+
+        .left-menu {
+            width: 248px;
+            flex-shrink: 0;
+        }
+
+        .left-menu-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82));
+            border: 1px solid rgba(145, 158, 171, 0.18);
+            border-radius: 24px;
+            padding: 14px;
+            box-shadow: 0 14px 34px rgba(124, 58, 237, 0.06), 0 8px 22px rgba(15, 23, 42, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .left-menu-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 6px 16px 6px;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+            margin-bottom: 14px;
+        }
+
+        .left-menu-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #8b5cf6, #60a5fa);
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            box-shadow: 0 8px 18px rgba(139, 92, 246, 0.22);
+        }
+
+        .left-menu-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1.2;
+        }
+
+        .left-menu-sub {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.35;
+        }
+
+        .left-menu-group {
+            margin-top: 8px;
+        }
+
+        .left-menu-group-title {
+            margin: 0 0 10px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+
+        .left-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+            .left-tools button,
+            .left-tools label {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .left-tools button {
+                text-align: left;
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                background: rgba(255,255,255,0.82);
+                color: #374151;
+                border-radius: 16px;
+                padding: 12px 14px;
+                font-size: 15px;
+                font-weight: 600;
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+                transition: all 0.2s ease;
+            }
+
+                .left-tools button:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+                    border-color: rgba(139, 92, 246, 0.25);
+                }
+
+                .left-tools button.primary {
+                    background: linear-gradient(135deg, #3b82f6, #2563eb);
+                    color: #fff;
+                    border-color: #2563eb;
+                    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
+                }
+
+                .left-tools button.success {
+                    background: linear-gradient(135deg, #22c55e, #16a34a);
+                    color: #fff;
+                    border-color: #16a34a;
+                }
+
+            .left-tools .live-check {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 11px 12px;
+                margin: 0;
+                border: 1px solid rgba(148, 163, 184, 0.18);
+                background: rgba(255,255,255,0.7);
+                border-radius: 16px;
+                color: #374151;
+                font-size: 14px;
+                font-weight: 600;
+                line-height: 1.35;
+            }
+
+                .left-tools .live-check input[type="checkbox"] {
+                    width: 16px;
+                    height: 16px;
+                    accent-color: #8b5cf6;
+                    margin: 0;
+                    flex-shrink: 0;
+                }
+
+        .left-menu-footer {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(148, 163, 184, 0.14);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .left-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            font-size: 13px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+            .left-chip.theme-btn {
+                border: 0;
+                cursor: pointer;
+            }
+
+        #matrixThemeBg {
+            display: none;
+        }
+
+            #matrixThemeBg canvas {
+                width: 100%;
+                height: 100%;
+                display: block;
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                opacity: 0.86;
+            }
+
+        body.matrix-theme #matrixThemeBg {
+            display: block;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-color: #010b0a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cg fill='%2362ffd6' fill-opacity='0.26' font-family='monospace' font-size='18'%3E%3Ctext x='8' y='20'%3E010101101001%3C/text%3E%3Ctext x='22' y='62'%3E001011001011%3C/text%3E%3Ctext x='2' y='104'%3E110010010111%3C/text%3E%3Ctext x='35' y='146'%3E011010100101%3C/text%3E%3Ctext x='10' y='188'%3E101100100110%3C/text%3E%3Ctext x='28' y='230'%3E001101011001%3C/text%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cg fill='%2318ffc5' fill-opacity='0.18' font-family='monospace' font-size='16'%3E%3Ctext x='6' y='18'%3E1010%200111%200010%3C/text%3E%3Ctext x='24' y='58'%3E0011%201010%201101%3C/text%3E%3Ctext x='10' y='98'%3E1110%200100%201011%3C/text%3E%3Ctext x='30' y='138'%3E0101%201001%200110%3C/text%3E%3Ctext x='4' y='178'%3E1001%200111%200101%3C/text%3E%3C/g%3E%3C/svg%3E"), radial-gradient(circle at 15% 10%, rgba(37, 244, 192, 0.22), transparent 26%), radial-gradient(circle at 85% 20%, rgba(37, 244, 192, 0.20), transparent 30%), linear-gradient( to bottom, rgba(64, 255, 210, 0.22) 0%, rgba(64, 255, 210, 0.02) 30%, rgba(1, 11, 10, 0.94) 80% );
+            background-size: 260px 260px, 220px 220px, auto, auto, 100% 180%;
+            background-position: 0 0, 40px 0, 0 0, 0 0, 0 0;
+            animation: matrixFlow 8s linear infinite, matrixHue 10s ease-in-out infinite;
+            filter: saturate(1.25) contrast(1.1);
+        }
+
+            body.matrix-theme #matrixThemeBg::before,
+            body.matrix-theme #matrixThemeBg::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+            }
+
+            body.matrix-theme #matrixThemeBg::before {
+                background: repeating-linear-gradient( to bottom, rgba(9, 255, 185, 0.18) 0px, rgba(9, 255, 185, 0.18) 2px, transparent 2px, transparent 12px );
+                mix-blend-mode: screen;
+                opacity: 0.35;
+                animation: matrixRain 2.8s linear infinite;
+            }
+
+            body.matrix-theme #matrixThemeBg::after {
+                background: radial-gradient(circle at center, transparent 45%, rgba(0, 0, 0, 0.46) 100%);
+                animation: matrixPulse 2.5s ease-in-out infinite;
+            }
+
+        body.matrix-theme .left-menu-card,
+        body.matrix-theme .right-topbar-card,
+        body.matrix-theme .right-form-card,
+        body.matrix-theme .right-advanced-card,
+        body.matrix-theme .print-shell,
+        body.matrix-theme #debugWrap {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(4, 28, 24, 0.92), rgba(5, 22, 20, 0.88));
+            border-color: rgba(72, 255, 206, 0.26);
+            box-shadow: 0 0 0 1px rgba(72, 255, 206, 0.10), 0 12px 36px rgba(0, 255, 170, 0.10);
+            color: #d6fff3;
+        }
+
+            body.matrix-theme .left-menu-card::after,
+            body.matrix-theme .right-topbar-card::after,
+            body.matrix-theme .right-form-card::after,
+            body.matrix-theme .right-advanced-card::after,
+            body.matrix-theme .print-shell::after,
+            body.matrix-theme #debugWrap::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                pointer-events: none;
+                opacity: 0.22;
+                mix-blend-mode: screen;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cg fill='%2383ffe3' fill-opacity='0.55' font-family='monospace' font-size='13'%3E%3Ctext x='8' y='16'%3E01001011%3C/text%3E%3Ctext x='34' y='44'%3E11001010%3C/text%3E%3Ctext x='10' y='72'%3E00101101%3C/text%3E%3Ctext x='40' y='100'%3E10100110%3C/text%3E%3Ctext x='6' y='128'%3E01101001%3C/text%3E%3Ctext x='30' y='156'%3E10010110%3C/text%3E%3C/g%3E%3C/svg%3E");
+                background-size: 190px 190px;
+                animation: panelBinaryRain 7s linear infinite;
+            }
+
+        body.matrix-theme .left-chip,
+        body.matrix-theme button,
+        body.matrix-theme select,
+        body.matrix-theme input[type="text"],
+        body.matrix-theme input[type="date"],
+        body.matrix-theme textarea {
+            background: rgba(8, 26, 23, 0.92);
+            color: #c8ffe9;
+            border-color: rgba(72, 255, 206, 0.30);
+        }
+
+        body.matrix-theme input[readonly],
+        body.matrix-theme #thu,
+        body.matrix-theme #urlBox,
+        body.matrix-theme #liclFileName,
+        body.matrix-theme #bldFileName {
+            background: rgba(6, 22, 19, 0.96) !important;
+            color: #b7ffe6 !important;
+            border-color: rgba(72, 255, 206, 0.34) !important;
+        }
+
+        body.matrix-theme .left-chip.theme-btn {
+            box-shadow: 0 0 18px rgba(72, 255, 206, 0.35);
+            text-shadow: 0 0 10px rgba(72, 255, 206, 0.65);
+        }
+
+        body.matrix-theme .status.ok {
+            border-color: rgba(20, 255, 160, 0.55);
+            background: rgba(4, 52, 36, 0.85);
+            color: #7dffbe;
+        }
+
+        body.matrix-theme .page-wrap {
+            position: relative;
+            z-index: 1;
+        }
+
+        @@keyframes matrixFlow {
+            from {
+                background-position: 0 0, 40px 0, 0 0, 0 0, 0 0;
+            }
+
+            to {
+                background-position: 0 180px, 40px 280px, 0 0, 0 0, 0 180px;
+            }
+        }
+
+        @@keyframes matrixRain {
+            from {
+                transform: translateY(-10px);
+            }
+
+            to {
+                transform: translateY(22px);
+            }
+        }
+
+        @@keyframes matrixPulse {
+            0%, 100% {
+                opacity: 0.55;
+            }
+
+            50% {
+                opacity: 0.85;
+            }
+        }
+
+        @@keyframes matrixHue {
+            0%, 100% {
+                filter: saturate(1.15) hue-rotate(0deg);
+            }
+
+            50% {
+                filter: saturate(1.35) hue-rotate(-12deg);
+            }
+        }
+
+        @@keyframes panelBinaryRain {
+            from {
+                background-position: 0 -140px;
+            }
+
+            to {
+                background-position: 0 140px;
+            }
+        }
+
+        .right-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .top-fields {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            margin-bottom: 12px;
+        }
+
+        .field {
+            min-width: 180px;
+        }
+
+            .field.small {
+                min-width: 140px;
+            }
+
+            .field.medium {
+                min-width: 220px;
+            }
+
+            .field label,
+            .box label,
+            .box1 label,
+            .source-box label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 6px;
+            }
+
+        input[type="date"],
+        input[type="text"],
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            font-size: 14px;
+            border: 1px solid #999;
+            background: #fff;
+        }
+
+        input[type="file"] {
+            max-width: 360px;
+        }
+
+        button {
+            padding: 9px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #999;
+            background: #fff;
+        }
+
+            button.primary {
+                background: #0d6efd;
+                color: #fff;
+                border-color: #0d6efd;
+            }
+
+            button.success {
+                background: #198754;
+                color: #fff;
+                border-color: #198754;
+            }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .status {
+            display: none;
+            padding: 10px 12px;
+            margin: 12px 0 14px 0;
+            border-radius: 4px;
+        }
+
+            .status.ok {
+                display: block;
+                background: #e8f7e8;
+                border: 1px solid #8bc48b;
+                color: #236423;
+            }
+
+            .status.err {
+                display: block;
+                background: #fdeaea;
+                border: 1px solid #e29a9a;
+                color: #8d1f1f;
+            }
+
+            .status.warn {
+                display: block;
+                background: #fff7e6;
+                border: 1px solid #ebc56d;
+                color: #7d5a00;
+            }
+
+        .box,
+        .box1 {
+            margin-top: 12px;
+        }
+
+        .adv-box {
+            display: none;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            background: #fafafa;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .source-box {
+            margin: 12px 0 0 0;
+        }
+
+        .print-actions {
+            margin: 14px 0 10px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .live-check input {
+            margin: 0;
+        }
+        /*
+                @@page {
+                    size: A4 portrait;
+                    margin: 0;
+                }
+
+                .print-shell {
+                    margin-top: 10px;
+                    background: #fff;
+                    border: 1px solid #d8d8d8;
+                    padding: 18px;
+                }
+
+                .print-area {
+                    width: 210mm;
+                    min-height: 297mm;
+                    margin: 0 auto;
+                    background: #fff;
+                    color: #000;
+                    font-family: "Times New Roman", Times, serif;
+                    padding-top: 1.27cm;
+                    padding-right: 2.007cm;
+                    padding-bottom: 0.432cm;
+                    padding-left: 2.997cm;
+                    box-sizing: border-box;
+                }
+
+        */
+
+        @@page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        .print-shell {
+            width: 210mm;
+            margin: 14px auto 0 auto;
+            background: #fff;
+            border: 1px solid #d8d8d8;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .print-area {
+            width: 210mm;
+            height: 297mm;
+            margin: 0;
+            background: #fff;
+            color: #000;
+            font-family: "Times New Roman", Times, serif;
+            padding-top: 1.10cm;
+            padding-right: 2.007cm;
+            padding-bottom: 0.432cm;
+            padding-left: 2.997cm;
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header-table {
+            width: 17.20cm;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin: 1.25cm auto 1.5mm auto;
+            border: none !important;
+        }
+
+            .header-table,
+            .header-table tr,
+            .header-table td {
+                border: none !important;
+            }
+
+                .header-table td {
+                    padding: 0;
+                    height: 2.00cm;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+
+        .header-left {
+            width: 40%;
+        }
+
+        .header-right {
+            width: 60%;
+        }
+
+        .header-left .header-box {
+            width: 5.60cm;
+            min-height: 2.00cm;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .header-right .header-box {
+            width: 8.40cm;
+            min-height: 2.00cm;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .header-left .line1,
+        .header-left .line2,
+        .header-right .line1,
+        .header-right .line2 {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 13pt;
+            font-weight: 700;
+            line-height: 1.03;
+            white-space: nowrap;
+            text-align: center;
+            letter-spacing: -0.5pt;
+            word-spacing: -1pt;
+        }
+
+        .header-left .line2,
+        .header-right .line2 {
+            margin-top: 1.2mm;
+        }
+
+        .header-left .underline {
+            width: 3.2cm;
+            border-bottom: 0.18mm solid #000;
+            margin: 2.3mm auto 0 auto;
+            height: 0;
+        }
+
+        .header-right .underline {
+            width: 5.4cm;
+            border-bottom: 0.18mm solid #000;
+            margin: 2.3mm auto 0 auto;
+            height: 0;
+        }
+
+        .title {
+            text-align: center;
+            margin-top: 4.12mm;
+            margin-bottom: 2.12mm;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14pt;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .date-line {
+            text-align: center;
+            margin-top: 2.12mm;
+            margin-bottom: 2.12mm;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14pt;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .print-counter {
+            text-align: center;
+            margin: 0 0 2.5mm 0;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14pt;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #111;
+        }
+
+        .result-table {
+            width: 16.53cm;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin: 0.9cm auto;
+        }
+
+            .result-table col.col-prize {
+                width: 4.83cm;
+            }
+
+            .result-table col.col-value {
+                width: 11.70cm;
+            }
+
+            .result-table th,
+            .result-table td {
+                border: 0.18mm solid #000;
+                padding: 0;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .result-table thead th {
+                font-family: "Times New Roman", Times, serif;
+                font-size: 14pt;
+                font-weight: 700;
+                line-height: 1;
+                padding-top: 2.1mm;
+                padding-bottom: 2.1mm;
+                white-space: nowrap;
+            }
+
+            .result-table td.prize {
+                font-family: "Times New Roman", Times, serif;
+                font-size: 14pt;
+                font-weight: 400;
+                line-height: 1;
+                text-align: left;
+                vertical-align: middle;
+                white-space: nowrap;
+                padding-top: 1.8mm;
+                padding-bottom: 1.8mm;
+                padding-left: 2.2mm;
+                padding-right: 1mm;
+            }
+
+                .result-table td.prize.bold-prize,
+                .result-table tr.db td.prize {
+                    font-weight: 700;
+                }
+
+            .result-table td.value {
+                font-family: "Times New Roman", Times, serif;
+                font-size: 16pt;
+                font-weight: 700;
+                line-height: 1;
+                text-align: center;
+                vertical-align: middle;
+                white-space: nowrap;
+                padding-top: 1.5mm;
+                padding-bottom: 1.5mm;
+            }
+
+        .print-empty {
+            padding: 16px;
+            text-align: center;
+            color: #666;
+            border: 1px dashed #ccc;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 6px;
+        }
+
+        .sign-table {
+            width: 18.20cm;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin: 13mm auto 0 auto;
+            position: relative;
+            left: -0.90cm;
+        }
+
+            .sign-table td {
+                border: none;
+                padding: 0;
+                text-align: center;
+                vertical-align: top;
+            }
+
+            .sign-table col.c1,
+            .sign-table col.c2,
+            .sign-table col.c3,
+            .sign-table col.c4 {
+                width: 25%;
+            }
+
+        .sign-box {
+            width: 4cm;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .sign-title {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14pt;
+            font-weight: 700;
+            line-height: 1.05;
+            white-space: nowrap;
+        }
+
+        .sign-sub {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14pt;
+            line-height: 1.05;
+            white-space: nowrap;
+            margin-top: 1.4mm;
+            font-weight: 700;
+        }
+
+            .sign-sub + .sign-sub {
+                margin-top: 1.2mm;
+            }
+
+        .sign-name-row .sign-box {
+            padding-top: 18mm;
+        }
+
+        .sign-name {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14pt;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        #debugWrap {
+            margin-top: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #bbb;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            min-height: 220px;
+            resize: vertical;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 12px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 520px;
+            border: 1px solid #bbb;
+            background: #fff;
+        }
+
+        .hidden-debug {
+            display: none;
+        }
+
+        @@media (max-width: 900px) {
+            .layout-main {
+                flex-direction: column;
+            }
+
+            .left-menu {
+                width: 100%;
+            }
+
+            .left-menu-card {
+                width: 100%;
+            }
+
+            .left-tools button,
+            .left-tools label {
+                width: 100%;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media print {
+            body {
+                background: #fff;
+            }
+
+                body.direct-print-mode .print-shell {
+                    display: block !important;
+                    position: static !important;
+                    width: 210mm !important;
+                    height: 297mm !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    border-radius: 0 !important;
+                    backdrop-filter: none !important;
+                    background: #fff !important;
+                    overflow: hidden !important;
+                }
+
+                body.direct-print-mode .print-area {
+                    width: 210mm !important;
+                    height: 297mm !important;
+                    min-height: 297mm !important;
+                    margin: 0 !important;
+                    box-sizing: border-box !important;
+                    overflow: hidden !important;
+                }
+
+                body.direct-print-mode .left-menu,
+                body.direct-print-mode #debugWrap,
+                body.direct-print-mode .right-topbar-card,
+                body.direct-print-mode .right-form-card,
+                body.direct-print-mode .right-advanced-card {
+                    display: none !important;
+                }
+
+                body.direct-print-mode .layout-main,
+                body.direct-print-mode .right-content {
+                    display: block !important;
+                    width: auto !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    max-width: none !important;
+                    background: #fff !important;
+                }
+
+                body.direct-print-mode .no-print {
+                    display: block !important;
+                }
+
+                body:not(.direct-print-mode) .no-print,
+                #status {
+                    display: none !important;
+                }
+
+            .page-wrap,
+            .print-shell,
+            .print-area {
+                margin: 0;
+                padding: 0;
+                border: none;
+                max-width: none;
+                background: #fff;
+            }
+
+            .print-shell {
+                padding: 0;
+            }
+        }
+
+        .right-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .right-topbar-card,
+        .right-form-card,
+        .right-advanced-card,
+        .print-shell {
+            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82));
+            border: 1px solid rgba(145, 158, 171, 0.18);
+            border-radius: 24px;
+            box-shadow: 0 14px 34px rgba(124, 58, 237, 0.05), 0 8px 22px rgba(15, 23, 42, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .right-topbar-card {
+            padding: 18px 20px;
+            margin-bottom: 14px;
+        }
+
+        .right-topbar-title {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1.15;
+        }
+
+        .right-topbar-sub {
+            margin: 6px 0 0 0;
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .right-form-card {
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .right-advanced-card {
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .top-fields {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin: 0 0 14px 0;
+        }
+
+            .top-fields .field {
+                min-width: 180px;
+            }
+
+                .top-fields .field.medium {
+                    min-width: 260px;
+                }
+
+        .field label,
+        .box label,
+        .box1 label,
+        .source-box label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        input[type="date"],
+        input[type="text"],
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px 12px;
+            font-size: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 14px;
+            background: rgba(255,255,255,0.88);
+            color: #1f2937;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+            input[type="date"]:focus,
+            input[type="text"]:focus,
+            select:focus,
+            textarea:focus {
+                outline: none;
+                border-color: rgba(139, 92, 246, 0.38);
+                box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.10);
+            }
+
+        .source-box,
+        .box,
+        .box1 {
+            margin-top: 14px;
+        }
+
+        .box1 {
+            margin-top: 16px;
+        }
+
+        .status {
+            display: none;
+            padding: 12px 14px;
+            margin: 14px 0 0 0;
+            border-radius: 16px;
+            font-weight: 600;
+            line-height: 1.45;
+        }
+
+            .status.ok {
+                display: block;
+                background: rgba(34, 197, 94, 0.10);
+                border: 1px solid rgba(34, 197, 94, 0.20);
+                color: #166534;
+            }
+
+            .status.err {
+                display: block;
+                background: rgba(239, 68, 68, 0.10);
+                border: 1px solid rgba(239, 68, 68, 0.20);
+                color: #991b1b;
+            }
+
+            .status.warn {
+                display: block;
+                background: rgba(245, 158, 11, 0.12);
+                border: 1px solid rgba(245, 158, 11, 0.20);
+                color: #92400e;
+            }
+
+        .print-actions {
+            margin: 18px 0 0 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+            .print-actions button {
+                border-radius: 16px;
+                padding: 10px 16px;
+                font-weight: 700;
+            }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.88);
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            min-height: 220px;
+            resize: vertical;
+        }
+
+        #hoiDongBox,
+        #banLanhDaoBox {
+            min-height: 90px !important;
+        }
+
+        .print-shell {
+            margin-top: 14px;
+            padding: 18px;
+        }
+
+        .print-area {
+            background: #fff;
+            border-radius: 18px;
+        }
+
+        #debugWrap {
+            margin-top: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 520px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 16px;
+            background: #fff;
+        }
+
+        .source-box input[readonly],
+        #liclFileName,
+        #bldFileName,
+        #urlBox,
+        #thu {
+            background: rgba(248, 250, 252, 0.95);
+        }
+
+        .print-shell:hover,
+        .right-topbar-card:hover,
+        .right-form-card:hover,
+        .right-advanced-card:hover {
+            box-shadow: 0 18px 38px rgba(124, 58, 237, 0.07), 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        @@media (max-width: 900px) {
+            .top-fields {
+                flex-direction: column;
+            }
+
+                .top-fields .field,
+                .top-fields .field.medium {
+                    width: 100%;
+                    min-width: 100%;
+                }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .print-warn-bar {
+            display: none;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.22);
+            color: #92400e;
+            font-weight: 600;
+            line-height: 1.4;
+            min-height: 44px;
+        }
+
+        .result-table td.value.pending {
+            color: #888;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div id="matrixThemeBg" aria-hidden="true">
+        <canvas id="matrixCanvas"></canvas>
+    </div>
+    <div class="page-wrap">
+        <div class="no-print">
+            <div class="layout-main">
+
+                @*<div class="left-menu">
+                        <div class="left-menu-card">
+                            <div class="left-tools">
+                                <button type="button" id="btnNapDai">Nạp đài theo ngày</button>
+                                <button type="button" class="primary" id="btnLoad">Load dữ liệu</button>
+
+                                <label class="live-check">
+                                    <input type="checkbox" id="chkLiveMode" />
+                                    <span>Live mode</span>
+                                </label>
+
+                                <label class="live-check">
+                                    <input type="checkbox" id="chkLoTo4" />
+                                    <span>Hiện số lô tô 4 số cuối</span>
+                                </label>
+
+                                <button type="button" id="btnStartAuto">Chạy auto</button>
+                                <button type="button" id="btnStopAuto">Dừng auto</button>
+                                <button type="button" id="btnToday">Hôm nay</button>
+                                <button type="button" id="btnToggleAdvanced">Bật thêm</button>
+                            </div>
+                        </div>
+                    </div>*@
+
+                <div class="left-menu">
+                    <div class="left-menu-card">
+                        <div class="left-menu-head">
+                            <div class="left-menu-icon">📄</div>
+                            <div>
+                                <p class="left-menu-title">Minh Ngọc Raw</p>
+                                <p class="left-menu-sub">Load HTML • Lịch Hội đồng • BLD • In mẫu</p>
+                            </div>
+                        </div>
+
+                        <div class="left-menu-group">
+                            <div class="left-menu-group-title">Tác vụ</div>
+                            <div class="left-tools">
+                                <button type="button" id="btnNapDai">Nạp đài theo ngày</button>
+                                <button type="button" class="primary" id="btnLoad">Load dữ liệu</button>
+
+                                <label class="live-check">
+                                    <input type="checkbox" id="chkLiveMode" />
+                                    <span>Live mode</span>
+                                </label>
+
+                                <label class="live-check">
+                                    <input type="checkbox" id="chkLoTo4" checked />
+                                    <span>Hiện số lô tô 4 số cuối</span>
+                                </label>
+
+                                <label class="live-check">
+                                    <input type="checkbox" id="chkAutoPrint" />
+                                    <span>Tự in khi đủ kết quả (Auto)</span>
+                                </label>
+
+                                <button type="button" id="btnStartAuto">Chạy auto</button>
+                                <button type="button" id="btnStopAuto">Dừng auto</button>
+                                <button type="button" id="btnToday">Hôm nay</button>
+                                <button type="button" id="btnToggleAdvanced">Bật thêm</button>
+                            </div>
+                        </div>
+
+                        <div class="left-menu-footer">
+                            <span class="left-chip">⚙ MinhNgocRaw</span>
+                            <button type="button" id="btnTheme" class="left-chip theme-btn">☀ Theme</button>
+                        </div>
+                    </div>
+                </div>
+
+                @*<div class="right-content">
+                        <h2>Load dữ liệu Minh Ngọc</h2>
+                        <div class="hint">
+                            Màn này chỉ để tải HTML/xem trước từ Minh Ngọc. Không lưu DB. Chọn đài nào thì sẽ đổ kết quả vào mẫu in ngay tại đây.
+                        </div>
+
+                        <div class="top-fields">
+                            <div class="field">
+                                <label>Ngày</label>
+                                <input type="date" id="ngay" value="@today" />
+                            </div>
+
+                            <div class="field small">
+                                <label>Thứ</label>
+                                <input type="text" id="thu" readonly />
+                            </div>
+
+                            <div class="field medium">
+                                <label>Đài theo ngày</label>
+                                <select id="dai"></select>
+                            </div>
+                        </div>
+
+                        <div id="lichBox" class="box adv-box" style="margin-top:0;"></div>
+                        <div id="status" class="status"></div>
+
+                        <div class="source-box">
+                            <label>Nguồn URL</label>
+                            <input type="text" id="urlBox" readonly />
+                        </div>
+
+                        <div class="box adv-box">
+                            <label>File LICL.docx</label>
+                            <div class="actions" style="align-items:center;">
+                                <input type="file" id="liclFile" accept=".docx" />
+                                <button type="button" id="btnUploadLicl">Tải file lên</button>
+                                <input type="text" id="liclFileName" readonly style="min-width:320px;" placeholder="Chưa có file upload" />
+                            </div>
+                        </div>
+
+                        <div class="box adv-box">
+                            <label>Hội đồng đọc từ file</label>
+                            <textarea id="hoiDongBox" readonly style="min-height:80px;"></textarea>
+                        </div>
+
+                        <div class="box1">
+                            <label>Chọn người ký Hội đồng</label>
+                            <select id="hoiDongSelect"></select>
+                        </div>
+
+                        <div class="box adv-box">
+                            <label>File Ban lãnh đạo (.docx)</label>
+                            <div class="actions" style="align-items:center;">
+                                <input type="file" id="bldFile" accept=".docx" />
+                                <button type="button" id="btnUploadBld">Tải file BLD lên</button>
+                                <input type="text" id="bldFileName" readonly style="min-width:320px;" placeholder="Chưa có file upload" />
+                            </div>
+                        </div>
+
+                        <div class="box adv-box">
+                            <label>Ban lãnh đạo đọc từ file</label>
+                            <textarea id="banLanhDaoBox" readonly style="min-height:80px;"></textarea>
+                        </div>
+
+                        <div class="print-actions">
+                            <button type="button" class="success" id="btnPrint">In mẫu</button>
+                        </div>
+                    </div>*@
+
+                <div class="right-content">
+                    <div class="right-topbar-card">
+                        <h2 class="right-topbar-title">Load dữ liệu Minh Ngọc</h2>
+                        <div class="right-topbar-sub">
+                            Màn này chỉ để tải HTML/xem trước từ Minh Ngọc. Không lưu DB. Chọn đài nào thì sẽ đổ kết quả vào mẫu in ngay tại đây.
+                        </div>
+                    </div>
+
+                    <div class="right-form-card">
+                        <div class="top-fields">
+                            <div class="field">
+                                <label>Ngày</label>
+                                <input type="date" id="ngay" value="@today" />
+                            </div>
+
+                            <div class="field small">
+                                <label>Thứ</label>
+                                <input type="text" id="thu" readonly />
+                            </div>
+
+                            <div class="field medium">
+                                <label>Đài theo ngày</label>
+                                <select id="dai"></select>
+                            </div>
+                            <div class="field medium">
+                                <label>Chọn người ký Hội đồng</label>
+                                <select id="hoiDongSelect"></select>
+                            </div>
+
+                        </div>
+
+                        <div id="lichBox" class="box adv-box" style="margin-top:0;"></div>
+                        <div id="status" class="status"></div>
+
+                        <div class="adv-box">
+                            <label>Nguồn URL</label>
+                            <input type="text" id="urlBox" readonly />
+                        </div>
+
+                        <div class="print-actions">
+                            <button type="button" class="success" id="btnPrint">In mẫu</button>
+                            <div id="printWarnBar" class="print-warn-bar" style="display:none;"></div>
+                        </div>
+                    </div>
+
+                    <div class="right-advanced-card adv-box">
+                        <div class="box" style="margin-top:0;">
+                            <label>File LICL.docx</label>
+                            <div class="actions" style="align-items:center;">
+                                <input type="file" id="liclFile" accept=".docx" />
+                                <button type="button" id="btnUploadLicl">Tải file lên</button>
+                                <input type="text" id="liclFileName" readonly style="min-width:320px;" placeholder="Chưa có file upload" />
+                            </div>
+                        </div>
+
+                        <div class="box">
+                            <label>Hội đồng đọc từ file</label>
+                            <textarea id="hoiDongBox" readonly style="min-height:80px;"></textarea>
+                        </div>
+
+                        <div class="box">
+                            <label>File Ban lãnh đạo (.docx)</label>
+                            <div class="actions" style="align-items:center;">
+                                <input type="file" id="bldFile" accept=".docx" />
+                                <button type="button" id="btnUploadBld">Tải file BLD lên</button>
+                                <input type="text" id="bldFileName" readonly style="min-width:320px;" placeholder="Chưa có file upload" />
+                            </div>
+                        </div>
+
+                        <div class="box">
+                            <label>Ban lãnh đạo đọc từ file</label>
+                            <textarea id="banLanhDaoBox" readonly style="min-height:80px;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="print-shell">
+                        <div class="print-area" id="printArea">
+                            <table class="header-table">
+                                <tr>
+                                    <td class="header-left">
+                                        <div class="header-box">
+                                            <div class="line1">CÔNG TY TNHH MỘT THÀNH VIÊN</div>
+                                            <div class="line2">XỔ SỐ KIẾN THIẾT &amp; DVTH ĐN</div>
+                                            <div class="underline"></div>
+                                        </div>
+                                    </td>
+                                    <td class="header-right">
+                                        <div class="header-box">
+                                            <div class="line1">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                                            <div class="line2">Độc lập – Tự do – Hạnh phúc</div>
+                                            <div class="underline"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div class="title">KẾT QUẢ XỔ SỐ TỰ CHỌN</div>
+                            <div class="date-line" id="printDateLine">Ngày -- tháng -- năm ----</div>
+                            <div class="print-counter" id="printCounter">0</div>
+
+                            <table class="result-table">
+                                <colgroup>
+                                    <col class="col-prize" />
+                                    <col class="col-value" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>GIẢI</th>
+                                        <th id="printDaiHeader">Đài</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="printBody">
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="print-empty">Chưa có dữ liệu. Anh chọn ngày, chọn đài rồi bấm Load dữ liệu.</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="sign-table">
+                                <colgroup>
+                                    <col class="c1" />
+                                    <col class="c2" />
+                                    <col class="c3" />
+                                    <col class="c4" />
+                                </colgroup>
+
+                                <tr>
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-title">P.HCTC</div>
+                                            <div class="sign-sub">Người lập</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-title">P.PHÁT HÀNH</div>
+                                            <div class="sign-sub">Người nhập</div>
+                                            <div class="sign-sub">kết quả</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-title">HỘI ĐỒNG</div>
+                                            <div class="sign-sub">GIÁM SÁT XỔ SỐ</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-title">BAN LÃNH ĐẠO</div>
+                                            <div class="sign-sub">CÔNG TY</div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr class="sign-name-row">
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-name">Đào Tuấn Anh</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-name">&nbsp;</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-name" id="signHoiDongName">&nbsp;</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="sign-box">
+                                            <div class="sign-name" id="signBanLanhDaoName">Phan Hữu Giống</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div id="debugWrap" class="no-print adv-box">
+            <div class="grid">
+                <div class="box">
+                    <label>Text rút gọn</label>
+                    <textarea id="textBox" readonly></textarea>
+                </div>
+
+                <div class="box">
+                    <label>HTML thô</label>
+                    <textarea id="htmlBox" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="box">
+                <label>Xem render HTML</label>
+                <iframe id="previewFrame"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentParsedRecord = null;
+        var liveTimer = null;
+        var printCounterTimer = null;
+        var isLoadingData = false;
+        var LIVE_INTERVAL_MS = 15000;
+        var advancedVisible = false;
+        var matrixThemeOn = false;
+        var matrixAnimFrame = null;
+        var matrixCtx = null;
+        var matrixDrops = [];
+        var matrixFontSize = 18;
+        var matrixCols = 0;
+        var matrixChars = '01アイウエオカキクケコサシスセソABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        var lastAutoPrintKey = '';
+
+        function getTodayIso() {
+            var now = new Date();
+            var y = now.getFullYear();
+            var m = String(now.getMonth() + 1).padStart(2, '0');
+            var d = String(now.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        }
+
+        function toastMsg(type, msg) {
+            var bg = '#198754';
+            if (type === 'warn') bg = '#f0ad4e';
+            if (type === 'err') bg = '#d9534f';
+
+            if (window.Toastify) {
+                Toastify({
+                    text: msg || '',
+                    duration: 3500,
+                    gravity: 'top',
+                    position: 'right',
+                    close: true,
+                    stopOnFocus: true,
+                    style: {
+                        background: bg
+                    }
+                }).showToast();
+            }
+        }
+
+        function applyMatrixTheme(on) {
+            matrixThemeOn = !!on;
+            document.body.classList.toggle('matrix-theme', matrixThemeOn);
+            var btn = document.getElementById('btnTheme');
+            if (btn) btn.textContent = matrixThemeOn ? '🌙 Theme' : '☀ Theme';
+
+            if (matrixThemeOn) {
+                startMatrixRain();
+            } else {
+                stopMatrixRain();
+            }
+        }
+
+        function resizeMatrixCanvas() {
+            var canvas = document.getElementById('matrixCanvas');
+            if (!canvas) return;
+            var dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(window.innerWidth * dpr);
+            canvas.height = Math.floor(window.innerHeight * dpr);
+
+            matrixCtx = canvas.getContext('2d');
+            if (!matrixCtx) return;
+            matrixCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            matrixCols = Math.ceil(window.innerWidth / matrixFontSize);
+            matrixDrops = Array.from({ length: matrixCols }, function () {
+                return Math.random() * window.innerHeight / matrixFontSize;
+            });
+        }
+
+        function drawMatrixFrame() {
+            if (!matrixThemeOn || !matrixCtx) return;
+
+            var w = window.innerWidth;
+            var h = window.innerHeight;
+            matrixCtx.fillStyle = 'rgba(1, 11, 10, 0.08)';
+            matrixCtx.fillRect(0, 0, w, h);
+
+            matrixCtx.font = matrixFontSize + 'px monospace';
+            for (var i = 0; i < matrixDrops.length; i++) {
+                var text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                var x = i * matrixFontSize;
+                var y = matrixDrops[i] * matrixFontSize;
+
+                matrixCtx.fillStyle = Math.random() > 0.93 ? '#b8ffe9' : '#49ffc8';
+                matrixCtx.fillText(text, x, y);
+
+                if (y > h && Math.random() > 0.975) {
+                    matrixDrops[i] = 0;
+                } else {
+                    matrixDrops[i] += 1;
+                }
+            }
+
+            matrixAnimFrame = window.requestAnimationFrame(drawMatrixFrame);
+        }
+
+        function startMatrixRain() {
+            if (matrixAnimFrame) return;
+            resizeMatrixCanvas();
+            drawMatrixFrame();
+        }
+
+        function stopMatrixRain() {
+            if (matrixAnimFrame) {
+                window.cancelAnimationFrame(matrixAnimFrame);
+                matrixAnimFrame = null;
+            }
+            if (matrixCtx) {
+                matrixCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            }
+        }
+
+        function normalizeBldName(name) {
+            var raw = (name || '').trim();
+            if (!raw) return '';
+
+            var cleaned = raw
+                .replace(/^Đ\/c\s*/i, '')
+                .replace(/^ĐC\s*/i, '')
+                .trim();
+
+            var key = cleaned.toLowerCase();
+
+            if (key === 'đức' || key === 'duc') return 'Nguyễn Công Đức';
+            if (key === 'giống' || key === 'giong') return 'Phan Hữu Giống';
+            if (key === 'tiến' || key === 'tien') return 'Đinh Việt Tiến';
+            if (key === 'thư' || key === 'thu') return 'Lê Anh Thư';
+            return cleaned;
+        }
+
+        function normalizeBldArray(arr) {
+            return (arr || []).map(function (x) {
+                return normalizeBldName(x);
+            }).filter(function (x) {
+                return !!x;
+            });
+        }
+
+        function isLiveMode() {
+            return document.getElementById('ngay').value === getTodayIso();
+        }
+
+        function isLiveChecked() {
+            return document.getElementById('chkLiveMode').checked;
+        }
+
+        function canRunAutoLive() {
+            return isLiveMode() && isLiveChecked() && !!document.getElementById('dai').value;
+        }
+
+        function stopLiveAuto() {
+            if (liveTimer) {
+                clearInterval(liveTimer);
+                liveTimer = null;
+            }
+        }
+
+        async function autoLoadLive() {
+
+            //stopLiveAuto();
+
+            //var okDai = await ensureValidDaiBeforeAuto();
+            //if (!okDai) return;
+
+            //if (!canRunAutoLive()) {
+
+            //    setStatus('warn', 'Auto chỉ chạy khi chọn ngày hôm nay, có chọn đài và bật Live mode.');
+            //    return;
+            //}
+
+            //await loadData(true);
+
+            //liveTimer = setInterval(function () {
+            //    if (document.hidden) return;
+            //    if (!canRunAutoLive()) {
+            //        stopLiveAuto();
+            //        return;
+            //    }
+            //    loadData(true);
+            //}, LIVE_INTERVAL_MS);
+
+            //setStatus('ok', 'Đã bật auto live. Hệ thống sẽ tự cập nhật mỗi 15 giây.');
+
+            stopLiveAuto();
+
+            var okDai = await ensureValidDaiBeforeAuto();
+            if (!okDai) return;
+
+            if (!canRunAutoLive()) {
+                setStatus('warn', 'Auto chỉ chạy khi chọn ngày hôm nay, có chọn đài và bật Live mode.');
+                return;
+            }
+
+            var okLoad = await loadData(true);
+            if (!okLoad) {
+                stopLiveAuto();
+                return;
+            }
+
+            liveTimer = setInterval(async function () {
+                if (document.hidden) return;
+
+                if (!canRunAutoLive()) {
+                    stopLiveAuto();
+                    return;
+                }
+
+                var ok = await loadData(true);
+                if (!ok) {
+                    stopLiveAuto();
+                }
+            }, LIVE_INTERVAL_MS);
+
+            setStatus('ok', 'Đã bật auto live. Hệ thống sẽ tự cập nhật mỗi 15 giây.');
+
+        }
+
+        function setStatus(type, msg) {
+            var box = document.getElementById('status');
+            box.className = 'status ' + type;
+            box.textContent = msg || '';
+        }
+
+        function toArraySafe(v) {
+            return Array.isArray(v) ? v : [];
+        }
+
+        function normalizeHoiDongArray(arr) {
+            return toArraySafe(arr).map(function (x) {
+                var raw = (x || '').replace(/\u00A0/g, ' ').trim();
+
+                // Bỏ tiền tố đánh số kiểu: "1/", "2.", "3)", "03 -", ...
+                raw = raw.replace(/^\s*0*\d{1,2}\s*([\/\.\)\-\:])\s*/, '').trim();
+
+                // Bỏ luôn ký hiệu bullet đầu dòng nếu có.
+                raw = raw.replace(/^[•\-]\s*/, '').trim();
+
+                return raw;
+            }).filter(function (x) {
+                if (!x) return false;
+                var compact = x.replace(/\s+/g, '');
+                // Chỉ loại các token đánh số rác đứng độc lập, không loại nội dung tên thật.
+                return !/^(0|3|03)$/.test(compact);
+            });
+        }
+
+        function setValueIfExists(id, value) {
+            var el = document.getElementById(id);
+            if (el) el.value = value || '';
+        }
+
+        function setTextIfExists(id, value) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = value || '';
+        }
+
+        function startPrintCounter() {
+            var el = document.getElementById('printCounter');
+            if (!el) return;
+
+            if (printCounterTimer) {
+                clearInterval(printCounterTimer);
+                printCounterTimer = null;
+            }
+
+            var n = 0;
+            el.textContent = String(n);
+
+            printCounterTimer = setInterval(function () {
+                n = (n + 1) % 10;
+                el.textContent = String(n);
+                syncPendingCellsWithCounter();
+            }, 350);
+        }
+
+        function toggleAdvanced() {
+            advancedVisible = !advancedVisible;
+
+            var items = document.querySelectorAll('.adv-box');
+            items.forEach(function (el) {
+                el.style.display = advancedVisible ? 'block' : 'none';
+            });
+
+            var btn = document.getElementById('btnToggleAdvanced');
+            if (btn) {
+                btn.textContent = advancedVisible ? 'Ẩn bớt' : 'Bật thêm';
+            }
+        }
+
+        function clearHoiDongSelect() {
+            var sl = document.getElementById('hoiDongSelect');
+            if (!sl) return;
+
+            sl.innerHTML = '';
+
+            var op = document.createElement('option');
+            op.value = '';
+            op.textContent = '-- Chọn người ký Hội đồng --';
+            sl.appendChild(op);
+
+            setTextIfExists('signHoiDongName', '\u00A0');
+        }
+
+        function renderHoiDongSelect(hoiDongArr) {
+            var sl = document.getElementById('hoiDongSelect');
+            if (!sl) return;
+
+            var list = normalizeHoiDongArray(hoiDongArr);
+            var oldValue = sl.value || '';
+            sl.innerHTML = '';
+
+            var first = document.createElement('option');
+            first.value = '';
+            first.textContent = '-- Chọn người ký Hội đồng --';
+            sl.appendChild(first);
+
+            list.forEach(function (name) {
+                var op = document.createElement('option');
+                op.value = name;
+                op.textContent = name;
+                sl.appendChild(op);
+            });
+
+            if (oldValue && list.indexOf(oldValue) >= 0) {
+                sl.value = oldValue;
+            } else if (list.length > 0) {
+                sl.value = list[0];
+            }
+
+            setTextIfExists('signHoiDongName', sl.value || '\u00A0');
+            updatePrintWarnBar();
+        }
+
+        function clearLiclDisplay() {
+
+            //setValueIfExists('hoiDongBox', '');
+            //clearHoiDongSelect();
+
+            setValueIfExists('hoiDongBox', '');
+            clearHoiDongSelect();
+            hidePrintWarnBar();
+
+        }
+
+        function clearBldDisplay() {
+
+            //setValueIfExists('banLanhDaoBox', '');
+            //setTextIfExists('signBanLanhDaoName', 'Phan Hữu Giống');
+
+            setValueIfExists('banLanhDaoBox', '');
+            setTextIfExists('signBanLanhDaoName', '');
+            hidePrintWarnBar();
+
+        }
+
+        function clearAll() {
+            setValueIfExists('urlBox', '');
+            setValueIfExists('textBox', '');
+            setValueIfExists('htmlBox', '');
+            var frame = document.getElementById('previewFrame');
+            if (frame) frame.srcdoc = '';
+            currentParsedRecord = null;
+            lastAutoPrintKey = '';
+            clearPrintTable();
+        }
+
+        function renderLich(thu, dais) {
+            setValueIfExists('thu', thu || '');
+            var wrap = document.getElementById('lichBox');
+            wrap.innerHTML = '';
+
+            if (!dais || !dais.length) return;
+
+            var html = '<label>Đài mở thưởng theo ngày đã chọn</label>';
+            for (var i = 0; i < dais.length; i++) {
+                html += '<span class="pill">' + dais[i] + '</span>';
+            }
+            wrap.innerHTML = html;
+        }
+
+        function renderDaiSelect(dais) {
+            var sl = document.getElementById('dai');
+            if (!sl) return;
+
+            sl.innerHTML = '';
+
+            var first = document.createElement('option');
+            first.value = '';
+            first.textContent = '-- Chọn đài --';
+            sl.appendChild(first);
+
+            toArraySafe(dais).forEach(function (d) {
+                var op = document.createElement('option');
+                op.value = d;
+                op.textContent = d;
+                sl.appendChild(op);
+            });
+        }
+
+        function clearPrintTable() {
+            setTextIfExists('printDaiHeader', 'Đài');
+            setTextIfExists('printDateLine', 'Ngày -- tháng -- năm ----');
+            document.getElementById('printBody').innerHTML =
+                '<tr><td colspan="2"><div class="print-empty">Chưa có dữ liệu. Anh chọn ngày, chọn đài rồi bấm Load dữ liệu.</div></td></tr>';
+        }
+
+        function splitVals(s) {
+            if (!s) return [];
+            return s.split(',')
+                .map(function (x) { return x.trim(); })
+                .filter(function (x) { return x.length > 0; });
+        }
+
+        function splitValsSafe(s) {
+            if (!s) return [];
+            return String(s).split(',')
+                .map(function (x) { return (x || '').trim(); })
+                .filter(function (x) { return x.length > 0; });
+        }
+
+        function makePendingText(len) {
+            return '·'.repeat(len);
+        }
+
+        function getLiveRollingDigit() {
+            var el = document.getElementById('printCounter');
+            var s = ((el || {}).textContent || '').trim();
+            return /^[0-9]$/.test(s) ? s : '0';
+        }
+
+        function syncPendingCellsWithCounter() {
+            if (!isLiveChecked()) return;
+            var digit = getLiveRollingDigit();
+            document.querySelectorAll('#printBody td.value.pending').forEach(function (cell) {
+                var raw = cell.getAttribute('data-raw-digits') || '';
+                var digits = parseInt(cell.getAttribute('data-digits') || '0', 10);
+                if (!digits) return;
+                var need = Math.max(0, digits - raw.length);
+                cell.textContent = raw + digit.repeat(need);
+            });
+        }
+
+        function buildRows(record) {
+            if (!record) return [];
+
+            var schema = [
+                { key: 'G8', giai: 'Giải Tám', count: 1, digits: 2, isDb: false },
+                { key: 'G7', giai: 'Giải Bảy', count: 1, digits: 3, isDb: false },
+                { key: 'G6', giai: 'Giải Sáu', count: 3, digits: 4, isDb: false },
+                { key: 'G5', giai: 'Giải Năm', count: 1, digits: 4, isDb: false },
+                { key: 'G4', giai: 'Giải Tư', count: 7, digits: 5, isDb: false },
+                { key: 'G3', giai: 'Giải Ba', count: 2, digits: 5, isDb: false },
+                { key: 'G2', giai: 'Giải Nhì', count: 1, digits: 5, isDb: false },
+                { key: 'G1', giai: 'Giải Nhất', count: 1, digits: 5, isDb: false },
+                { key: 'DB', giai: 'Giải Đặc Biệt', count: 1, digits: 6, isDb: true }
+            ];
+
+            var rows = [];
+
+            toArraySafe(schema).forEach(function (cfg) {
+                var vals = splitValsSafe(record[cfg.key]);
+
+                for (var i = 0; i < cfg.count; i++) {
+                    var v = vals[i] || '';
+                    var digitsOnly = String(v).replace(/\D/g, '');
+                    var isPending = digitsOnly.length < cfg.digits;
+                    rows.push({
+                        giai: cfg.giai,
+                        val: !isPending ? v : makePendingText(cfg.digits),
+                        rawVal: v,
+                        digits: cfg.digits,
+                        isDb: cfg.isDb,
+                        pending: isPending
+                    });
+                }
+            });
+
+            return rows;
+
+        }
+
+        function buildPendingRecord(dai) {
+            return {
+                Dai: dai || 'Đài',
+                G8: '',
+                G7: '',
+                G6: '',
+                G5: '',
+                G4: '',
+                G3: '',
+                G2: '',
+                G1: '',
+                DB: ''
+            };
+        }
+
+        function isLoTo4Mode() {
+            var el = document.getElementById('chkLoTo4');
+            return !!(el && el.checked);
+        }
+
+        function toLoTo4(value) {
+            var s = (value || '').trim();
+            if (!s) return '';
+            if (s.length >= 4) return s.slice(-4);
+            return s;
+        }
+
+        function transformRowsForLoTo(rows) {
+            var result = [];
+
+            toArraySafe(rows).forEach(function (r) {
+                var loto = toLoTo4(r.val);
+                var rawLoto = toLoTo4(r.rawVal || '');
+                var digits = Math.min(4, r.digits || 4);
+                var pending = !!r.pending;
+
+                if (loto || pending) {
+                    result.push({
+                        giai: r.giai,
+                        val: pending ? makePendingText(digits) : loto,
+                        rawVal: rawLoto,
+                        digits: digits,
+                        pending: pending,
+                        isDb: r.isDb
+                    });
+                }
+            });
+
+            return result;
+
+        }
+
+        function renderPrintTable(record, ngay) {
+            if (!record) {
+                clearPrintTable();
+                return;
+            }
+
+            setTextIfExists('printDaiHeader', record.Dai || 'Đài');
+
+            if (ngay) {
+                var parts = ngay.split('-');
+                if (parts.length === 3) {
+                    setTextIfExists('printDateLine', 'Ngày ' + parts[2] + ' tháng ' + parts[1] + ' năm ' + parts[0]);
+                }
+            }
+
+            var rows = buildRows(record);
+            if (isLoTo4Mode()) {
+                rows = transformRowsForLoTo(rows);
+            }
+
+            var body = document.getElementById('printBody');
+            body.innerHTML = '';
+
+            if (!rows.length) {
+                body.innerHTML = '<tr><td colspan="2"><div class="print-empty">Không có dữ liệu để hiển thị.</div></td></tr>';
+                return;
+            }
+
+            rows.forEach(function (r) {
+                var tr = document.createElement('tr');
+                if (r.isDb) tr.className = 'db';
+
+                var td1 = document.createElement('td');
+                td1.className = 'prize' + (r.isDb ? ' bold-prize' : '');
+                td1.textContent = r.giai;
+
+                //var td2 = document.createElement('td');
+                //td2.className = 'value';
+                //td2.textContent = r.val;
+
+                var td2 = document.createElement('td');
+                td2.className = 'value' + (r.pending ? ' pending' : '');
+                var displayVal = r.val;
+                if (r.pending) {
+                    var rawDigits = String(r.rawVal || '').replace(/\D/g, '');
+                    var need = Math.max(0, (r.digits || 0) - rawDigits.length);
+                    td2.setAttribute('data-raw-digits', rawDigits);
+                    td2.setAttribute('data-digits', String(r.digits || 0));
+                    if (isLiveChecked()) {
+                        var digit = getLiveRollingDigit();
+                        displayVal = rawDigits + digit.repeat(need);
+                    } else {
+                        displayVal = rawDigits + makePendingText(need);
+                    }
+                } else {
+                    td2.removeAttribute('data-raw-digits');
+                    td2.removeAttribute('data-digits');
+                }
+                td2.textContent = displayVal;
+
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                body.appendChild(tr);
+            });
+        }
+
+        function fillSignNamesFromLicl(hoiDong, banLanhDao) {
+            renderHoiDongSelect(hoiDong || []);
+
+            var bldArr = normalizeBldArray(banLanhDao || []);
+            var banLanhDaoText = bldArr.length ? bldArr.join(', ') : '';
+            if (banLanhDaoText) {
+                setTextIfExists('signBanLanhDaoName', banLanhDaoText);
+            }
+
+            updatePrintWarnBar();
+        }
+
+        async function loadLiclByDate() {
+            var ngay = document.getElementById('ngay').value;
+            if (!ngay) return;
+
+            try {
+                var url = '@Url.Action("GetLiclByDate", "MinhNgocRaw")' + '?date=' + encodeURIComponent(ngay);
+                var resp = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                var rs = await resp.json();
+                console.log('LICL response =', rs);
+
+                if (rs.fileName) {
+                    setValueIfExists('liclFileName', rs.fileName);
+                }
+
+                var hoiDongArr = normalizeHoiDongArray(rs.hoiDong || []);
+                var banLanhDaoArr = rs.banLanhDao || [];
+
+                setValueIfExists('hoiDongBox', hoiDongArr.join('\n'));
+                fillSignNamesFromLicl(hoiDongArr, banLanhDaoArr);
+                updatePrintWarnBar();
+
+                if (!rs.ok) {
+                    toastMsg('warn', rs.message || 'Không load được Hội đồng.');
+                    return false;
+                }
+
+                // Có thể backend trả ok nhưng file chưa có dòng tên hợp lệ.
+                // Trường hợp này chỉ cảnh báo nhẹ trên status để UI đỡ "giật" toast.
+                if (hoiDongArr.length === 0) {
+                    setStatus('warn', 'Đã load file nhưng chưa tách được tên Hội đồng hợp lệ.');
+                }
+                return true;
+            } catch (e) {
+                console.log('loadLiclByDate error =', e);
+                clearLiclDisplay();
+                toastMsg('err', 'Lỗi đọc Hội đồng: ' + e.message);
+            }
+
+        }
+
+        async function loadBldByDate() {
+            var ngay = document.getElementById('ngay').value;
+            if (!ngay) return;
+
+            try {
+                var url = '@Url.Action("GetBldByDate", "MinhNgocRaw")' + '?date=' + encodeURIComponent(ngay);
+                var resp = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                var rs = await resp.json();
+                console.log('BLD response =', rs);
+
+                if (rs.fileName) {
+                    setValueIfExists('bldFileName', rs.fileName);
+                }
+
+                var tenBld = normalizeBldName(rs.tenLanhDao || '');
+                setValueIfExists('banLanhDaoBox', tenBld);
+                setTextIfExists('signBanLanhDaoName', tenBld || '');
+                updatePrintWarnBar();
+                if (!rs.ok || !tenBld) {
+                    toastMsg('warn', rs.message || 'Không load được Ban lãnh đạo.');
+                }
+            } catch (e) {
+                console.log('loadBldByDate error =', e);
+                clearBldDisplay();
+                toastMsg('err', 'Lỗi đọc Ban lãnh đạo: ' + e.message);
+            }
+        }
+
+        async function uploadLiclDocx() {
+            var fileInput = document.getElementById('liclFile');
+            if (!fileInput.files || !fileInput.files.length) {
+                setStatus('warn', 'Chưa chọn file DOCX.');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('liclFile', fileInput.files[0]);
+
+            try {
+                setStatus('ok', 'Đang tải file LICL...');
+                var resp = await fetch('@Url.Action("UploadLiclDocx", "MinhNgocRaw")', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                var rs = await resp.json();
+
+                if (!rs.ok) {
+                    setStatus('err', rs.message || 'Upload file thất bại.');
+                    toastMsg('err', rs.message || 'Upload file LICL thất bại.');
+                    return;
+                }
+
+                setValueIfExists('liclFileName', rs.fileName || '');
+                toastMsg('ok', rs.message || 'Tải file LICL thành công.');
+                await loadLiclByDate();
+            } catch (e) {
+                setStatus('err', 'Lỗi upload file: ' + e.message);
+            }
+        }
+
+        async function uploadBldDocx() {
+            var fileInput = document.getElementById('bldFile');
+            if (!fileInput.files || !fileInput.files.length) {
+                setStatus('warn', 'Chưa chọn file BLD .docx');
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('bldFile', fileInput.files[0]);
+
+            try {
+                setStatus('ok', 'Đang tải file BLD...');
+                var resp = await fetch('@Url.Action("UploadBldDocx", "MinhNgocRaw")', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                var rs = await resp.json();
+
+                if (!rs.ok) {
+                    setStatus('err', rs.message || 'Upload file BLD thất bại.');
+                    toastMsg('err', rs.message || 'Upload file BLD thất bại.');
+                    return;
+                }
+
+                setValueIfExists('bldFileName', rs.fileName || '');
+                toastMsg('ok', rs.message || 'Tải file BLD thành công.');
+                await loadBldByDate();
+            } catch (e) {
+                setStatus('err', 'Lỗi upload file BLD: ' + e.message);
+            }
+        }
+
+        async function napDaiTheoNgay(showStatus) {
+            var ngay = document.getElementById('ngay').value;
+            if (!ngay) {
+                setStatus('warn', 'Chưa chọn ngày.');
+                return;
+            }
+
+            var oldDai = document.getElementById('dai').value;
+
+            try {
+                var url = '@Url.Action("GetDaiTheoNgay", "MinhNgocRaw")' + '?date=' + encodeURIComponent(ngay);
+                var resp = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                var rs = await resp.json();
+
+                if (!rs.ok) {
+                    renderLich('', []);
+                    renderDaiSelect([]);
+                    stopLiveAuto();
+                    if (showStatus) setStatus('err', rs.message || 'Không nạp được đài.');
+                    return;
+                }
+
+                renderLich(rs.thu || '', rs.dais || []);
+                renderDaiSelect(rs.dais || []);
+
+                var daiSelect = document.getElementById('dai');
+                if (oldDai && (rs.dais || []).indexOf(oldDai) >= 0) {
+                    daiSelect.value = oldDai;
+                }
+
+                if (showStatus) {
+                    setStatus('ok', rs.message || 'Đã nạp đài theo ngày.');
+                }
+
+                if (!canRunAutoLive()) {
+                    stopLiveAuto();
+                }
+            } catch (e) {
+                renderLich('', []);
+                renderDaiSelect([]);
+                stopLiveAuto();
+                if (showStatus) setStatus('err', 'Lỗi nạp đài: ' + e.message);
+            }
+        }
+
+        function updatePrintWarnBar() {
+            var bar = document.getElementById('printWarnBar');
+            if (!bar) return;
+
+            var hoiDongText = '';
+            var bldText = '';
+
+            var hoiDongNode = document.getElementById('signHoiDongName');
+            var bldNode = document.getElementById('signBanLanhDaoName');
+
+            if (hoiDongNode) hoiDongText = (hoiDongNode.textContent || '').replace(/\u00A0/g, ' ').trim();
+            if (bldNode) bldText = (bldNode.textContent || '').replace(/\u00A0/g, ' ').trim();
+
+            var missing = [];
+            if (!hoiDongText) missing.push('chưa có tên Hội đồng');
+            if (!bldText) missing.push('chưa có tên Ban lãnh đạo');
+
+            if (missing.length > 0) {
+                bar.textContent = 'Cảnh báo: ' + missing.join(' và ') + '.';
+                bar.style.display = 'flex';
+            } else {
+                bar.textContent = '';
+                bar.style.display = 'none';
+            }
+        }
+
+        function hidePrintWarnBar() {
+            var bar = document.getElementById('printWarnBar');
+            if (!bar) return;
+            bar.textContent = '';
+            bar.style.display = 'none';
+        }
+
+        async function loadData(isAuto) {
+            var ngay = document.getElementById('ngay').value;
+            var dai = document.getElementById('dai').value;
+
+            if (isLoadingData) return;
+
+            if (!ngay) {
+                setStatus('warn', 'Chưa chọn ngày.');
+                return;
+            }
+
+            if (!dai) {
+                setStatus('warn', 'Chưa chọn đài.');
+                return;
+            }
+
+            if (!isCurrentDaiValidForSelectedDate()) {
+                stopLiveAuto();
+                currentParsedRecord = null;
+                clearPrintTable();
+                setStatus('warn', 'Đài chọn không đúng lịch của ngày này. Đã dừng, không lấy dữ liệu.');
+                toastMsg('warn', 'Đài chọn không đúng lịch của ngày này. Đã dừng, không lấy dữ liệu.');
+                return false;
+            }
+
+            isLoadingData = true;
+
+            if (!isAuto) {
+                clearAll();
+                setStatus('ok', 'Đang tải dữ liệu...');
+            } else {
+                setStatus('ok', 'Đang tự cập nhật kết quả trực tiếp...');
+            }
+
+            try {
+                var url = '@Url.Action("Load", "MinhNgocRaw")'
+                    + '?date=' + encodeURIComponent(ngay)
+                    + '&dai=' + encodeURIComponent(dai);
+
+                var resp = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                var rs = await resp.json();
+
+                setValueIfExists('urlBox', rs.url || '');
+                setValueIfExists('textBox', rs.text || '');
+                setValueIfExists('htmlBox', rs.html || '');
+
+                var frame = document.getElementById('previewFrame');
+                if (frame) frame.srcdoc = rs.html || '';
+
+                renderLich(rs.thu || '', rs.dais || []);
+
+                if (rs.daiHopLeTheoThu !== true) {
+                    stopLiveAuto();
+
+                    var chk = document.getElementById('chkLiveMode');
+                    if (chk) chk.checked = false;
+
+                    currentParsedRecord = null;
+                    clearPrintTable();
+
+                    setStatus('warn', rs.message || 'Đài chọn không đúng lịch của ngày này. Đã dừng tuyệt đối.');
+                    toastMsg('warn', rs.message || 'Đài chọn không đúng lịch của ngày này. Đã dừng tuyệt đối.');
+
+                    return false;
+                }
+
+                if (!rs.ok) {
+                    currentParsedRecord = null;
+                    clearPrintTable();
+                    setStatus('err', rs.message || 'Không tải được dữ liệu.');
+                    return false;
+                }
+
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                if (!rs.daiHopLeTheoThu) {
+                    stopLiveAuto();
+                    currentParsedRecord = null;
+                    clearPrintTable();
+
+                    var chk = document.getElementById('chkLiveMode');
+                    if (chk) chk.checked = false;
+
+                    setStatus('warn', rs.message || 'Đài chọn không đúng lịch của ngày này.');
+                    toastMsg('warn', rs.message || 'Đài chọn không đúng lịch của ngày này.');
+                    return false;
+                }
+
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                currentParsedRecord = rs.record || null;
+
+                if (!currentParsedRecord) {
+                    var pendingRecord = buildPendingRecord(dai);
+                    renderPrintTable(pendingRecord, ngay);
+                    setStatus('warn', rs.message || 'Đã tải HTML, đang chờ kết quả trực tiếp...');
+                    return false;
+                }
+
+                setStatus('ok', isAuto ? 'Đã tự cập nhật kết quả trực tiếp.' : 'Đã tải xong kết quả.');
+                renderPrintTable(currentParsedRecord, ngay);
+                if (isAuto) {
+                    tryAutoPrintIfReady(currentParsedRecord, ngay, dai);
+                }
+                return true;
+
+            } catch (e) {
+                currentParsedRecord = null;
+                clearPrintTable();
+                console.error('loadData error =', e);
+                setStatus('err', 'Lỗi khi gọi màn load: ' + e.message);
+            } finally {
+                isLoadingData = false;
+            }
+        }
+
+        function isAutoPrintChecked() {
+            var el = document.getElementById('chkAutoPrint');
+            return !!(el && el.checked);
+        }
+
+        function hasSignNamesReadyForPrint() {
+            var hoiDongText = ((document.getElementById('signHoiDongName') || {}).textContent || '').replace(/\u00A0/g, ' ').trim();
+            var bldText = ((document.getElementById('signBanLanhDaoName') || {}).textContent || '').replace(/\u00A0/g, ' ').trim();
+            return !!(hoiDongText && bldText);
+        }
+
+        function tryAutoPrintIfReady(record, ngay, dai) {
+            if (!isAutoPrintChecked()) return;
+            if (!record) return;
+            if (!hasSignNamesReadyForPrint()) return;
+
+            var rows = buildRows(record);
+            var allReady = rows.length > 0 && rows.every(function (r) { return !r.pending; });
+            if (!allReady) return;
+
+            var key = [ngay || '', dai || '', JSON.stringify(record)].join('|');
+            if (key === lastAutoPrintKey) return;
+            lastAutoPrintKey = key;
+            printOnlyResultArea();
+        }
+
+        document.getElementById('btnNapDai').addEventListener('click', async function () {
+            await napDaiTheoNgay(true);
+        });
+
+        document.getElementById('btnLoad').addEventListener('click', async function () {
+            stopLiveAuto();
+            await loadData(false);
+        });
+
+        document.getElementById('btnStartAuto').addEventListener('click', async function () {
+            //var chk = document.getElementById('chkLiveMode');
+            //if (chk) chk.checked = true;
+
+            //document.getElementById('ngay').value = getTodayIso();
+
+            //await napDaiTheoNgay(false);
+
+            //var daiSelect = document.getElementById('dai');
+            //if (daiSelect && !daiSelect.value && daiSelect.options.length > 1) {
+            //    daiSelect.selectedIndex = 1; // tự chọn đài đầu tiên
+            //}
+
+            //if (!daiSelect || !daiSelect.value) {
+            //    setStatus('warn', 'Ngày này chưa có đài để chạy auto.');
+            //    return;
+            //}
+
+            //await loadLiclByDate();
+            //await loadBldByDate();
+            //await autoLoadLive();
+
+            var chk = document.getElementById('chkLiveMode');
+            if (chk) chk.checked = true;
+
+            var ok = await ensureValidDaiBeforeAuto();
+            if (!ok) {
+                stopLiveAuto();
+                return;
+            }
+
+            if (!isCurrentDaiValidForSelectedDate()) {
+                stopLiveHard('Đài chọn không đúng lịch của ngày này. Không chạy auto.');
+                return;
+            }
+
+            await loadLiclByDate();
+            await loadBldByDate();
+            await autoLoadLive();
+
+        });
+
+        document.getElementById('btnStopAuto').addEventListener('click', function () {
+            stopLiveAuto();
+            setStatus('warn', 'Đã dừng auto live.');
+        });
+
+        document.getElementById('btnToday').addEventListener('click', async function () {
+            document.getElementById('ngay').value = getTodayIso();
+            clearAll();
+            await napDaiTheoNgay(true);
+            await loadLiclByDate();
+            await loadBldByDate();
+        });
+
+        document.getElementById('btnTheme').addEventListener('click', function () {
+            applyMatrixTheme(!matrixThemeOn);
+        });
+
+        document.getElementById('dai').addEventListener('change', function () {
+            if (liveTimer && !canRunAutoLive()) {
+                stopLiveAuto();
+                setStatus('warn', 'Đã dừng auto vì điều kiện live không còn phù hợp.');
+            }
+        });
+
+        document.getElementById('chkLiveMode').addEventListener('change', function () {
+            if (!isLiveChecked()) {
+                stopLiveAuto();
+                setStatus('warn', 'Đã tắt Live mode.');
+            }
+        });
+
+        document.getElementById('chkLoTo4').addEventListener('change', function () {
+            var ngay = document.getElementById('ngay').value;
+            renderPrintTable(currentParsedRecord, ngay);
+        });
+
+        document.getElementById('chkAutoPrint').addEventListener('change', function () {
+            if (!this.checked) {
+                lastAutoPrintKey = '';
+            }
+        });
+
+        document.getElementById('ngay').addEventListener('change', async function () {
+            stopLiveAuto();
+            clearAll();
+            clearLiclDisplay();
+            clearBldDisplay();
+            await napDaiTheoNgay(false);
+            await loadLiclByDate();
+            await loadBldByDate();
+        });
+
+        document.getElementById('btnPrint').addEventListener('click', function () {
+            var hoiDongText = ((document.getElementById('signHoiDongName') || {}).textContent || '').replace(/\u00A0/g, ' ').trim();
+            var bldText = ((document.getElementById('signBanLanhDaoName') || {}).textContent || '').replace(/\u00A0/g, ' ').trim();
+
+            if (!hoiDongText || !bldText) {
+                updatePrintWarnBar();
+                setStatus('warn', 'Chưa đủ tên Hội đồng hoặc Ban lãnh đạo để in.');
+                toastMsg('warn', 'Chưa đủ tên Hội đồng hoặc Ban lãnh đạo để in.');
+                return;
+            }
+
+            printOnlyResultArea();
+
+        });
+
+        document.getElementById('btnToggleAdvanced').addEventListener('click', function () {
+            toggleAdvanced();
+        });
+
+        document.getElementById('btnUploadLicl').addEventListener('click', async function () {
+            await uploadLiclDocx();
+        });
+
+        document.getElementById('btnUploadBld').addEventListener('click', async function () {
+            await uploadBldDocx();
+        });
+
+        document.getElementById('hoiDongSelect').addEventListener('change', function () {
+            var val = this.value || '\u00A0';
+            setTextIfExists('signHoiDongName', val);
+            updatePrintWarnBar();
+        });
+
+        window.addEventListener('beforeunload', function () {
+            stopLiveAuto();
+            stopMatrixRain();
+            if (printCounterTimer) {
+                clearInterval(printCounterTimer);
+                printCounterTimer = null;
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (matrixThemeOn) resizeMatrixCanvas();
+        });
+
+        window.addEventListener('load', async function () {
+            clearAll();
+            clearLiclDisplay();
+            clearBldDisplay();
+            document.getElementById('chkLiveMode').checked = false;
+            document.getElementById('chkLoTo4').checked = true;
+            await napDaiTheoNgay(false);
+            await loadLiclByDate();
+            await loadBldByDate();
+            updatePrintWarnBar();
+            startPrintCounter();
+        });
+
+//        function printOnlyResultArea() {
+//    if (!currentParsedRecord) {
+//        setStatus('warn', 'Chưa có dữ liệu để in. Anh bấm Load dữ liệu trước.');
+//        return;
+//    }
+
+//    var printShell = document.querySelector('.print-shell');
+//    if (!printShell) {
+//        setStatus('err', 'Không tìm thấy vùng in.');
+//        return;
+//    }
+
+//    var printWindow = window.open('', '_blank', 'width=1100,height=900');
+//    if (!printWindow) {
+//        setStatus('err', 'Trình duyệt đang chặn cửa sổ in.');
+//        return;
+//    }
+
+//    var headHtml = '';
+//    document.querySelectorAll('style, link[rel="stylesheet"]').forEach(function (el) {
+//        headHtml += el.outerHTML;
+//    });
+
+//    var html = `
+//<!DOCTYPE html>
+//<html lang="vi">
+//<head>
+//    <meta charset="utf-8" />
+//    <title>In mẫu</title>
+//    ${headHtml}
+//    <style>
+//        html, body {
+//            margin: 0;
+//            padding: 0;
+//            background: #fff !important;
+//        }
+
+//        body {
+//            -webkit-print-color-adjust: exact;
+//            print-color-adjust: exact;
+//        }
+
+//        .no-print,
+//        #debugWrap,
+//        #status {
+//            display: none !important;
+//        }
+
+//        .page-wrap,
+//        .layout-main,
+//        .right-content,
+//        .left-menu {
+//            margin: 0 !important;
+//            padding: 0 !important;
+//            display: block !important;
+//            width: auto !important;
+//            max-width: none !important;
+//            background: #fff !important;
+//        }
+
+//        .print-shell {
+//            margin: 0 !important;
+//            padding: 0 !important;
+//            border: none !important;
+//            box-shadow: none !important;
+//            background: #fff !important;
+//        }
+//    </style>
+//</head>
+//<body>
+//    ${printShell.outerHTML}
+//    <script>
+//        window.onload = function () {
+//            setTimeout(function () {
+//                window.print();
+
+//            }, 800);
+//        };
+//    <\/script>
+//</body>
+//</html>`;
+
+//    printWindow.document.open();
+//    printWindow.document.write(html);
+//    printWindow.document.close();
+//}
+
+        function printOnlyResultArea() {
+            if (!currentParsedRecord) {
+                setStatus('warn', 'Chưa có dữ liệu để in. Anh bấm Load dữ liệu trước.');
+                return;
+            }
+
+            var printShell = document.querySelector('.print-shell');
+            if (!printShell) {
+                setStatus('err', 'Không tìm thấy vùng in.');
+                return;
+            }
+
+            document.body.classList.add('direct-print-mode');
+
+            var cleaned = false;
+            function cleanupAfterPrint() {
+                if (cleaned) return;
+                cleaned = true;
+                document.body.classList.remove('direct-print-mode');
+                window.removeEventListener('afterprint', cleanupAfterPrint);
+            }
+
+            window.addEventListener('afterprint', cleanupAfterPrint);
+            setTimeout(cleanupAfterPrint, 1500);
+            window.print();
+        }
+
+        async function ensureValidDaiBeforeAuto() {
+            document.getElementById('ngay').value = getTodayIso();
+            await napDaiTheoNgay(false);
+
+            var daiSelect = document.getElementById('dai');
+            if (!daiSelect) {
+                setStatus('err', 'Không tìm thấy ô chọn đài.');
+                toastMsg('err', 'Không tìm thấy ô chọn đài.');
+                return false;
+            }
+
+            var currentValue = daiSelect.value || '';
+
+            var validDais = Array.from(daiSelect.options)
+                .slice(1)
+                .map(function (o) { return o.value; })
+                .filter(function (v) { return !!v; });
+
+            if (validDais.length === 0) {
+                setStatus('warn', 'Ngày này chưa có đài hợp lệ để chạy auto.');
+                toastMsg('warn', 'Ngày này chưa có đài hợp lệ để chạy auto.');
+                return false;
+            }
+
+            if (!currentValue) {
+                setStatus('warn', 'Chưa chọn đài. Anh chọn đài đúng lịch rồi bấm lại.');
+                toastMsg('warn', 'Chưa chọn đài. Anh chọn đài đúng lịch rồi bấm lại.');
+                return false;
+            }
+
+            if (validDais.indexOf(currentValue) < 0) {
+
+                setStatus('warn', 'Đài chọn không đúng lịch của ngày này. Auto đã dừng, không lấy dữ liệu.');
+                toastMsg('warn', 'Đài chọn không đúng lịch của ngày này. Auto đã dừng, không lấy dữ liệu.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function isCurrentDaiValidForSelectedDate() {
+            var daiSelect = document.getElementById('dai');
+            if (!daiSelect) return false;
+
+            var currentValue = daiSelect.value || '';
+            if (!currentValue) return false;
+
+            var validDais = Array.from(daiSelect.options)
+                .slice(1) // bỏ option đầu "-- Chọn đài --"
+                .map(function (o) { return o.value; })
+                .filter(function (v) { return !!v; });
+
+            return validDais.indexOf(currentValue) >= 0;
+        }
+
+    </script>
+</body>
+</html>
