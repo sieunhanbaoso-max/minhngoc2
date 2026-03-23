@@ -690,8 +690,10 @@
         }
 
             .print-counter.horse-mode {
-                letter-spacing: 1px;
-                font-size: 13.5pt;
+                letter-spacing: 2px;
+                font-size: 18pt;
+                font-weight: 700;
+                text-shadow: 0 1px 0 #fff, 0 0 10px rgba(168, 85, 247, 0.45);
             }
 
         .result-table {
@@ -1200,6 +1202,13 @@
             font-weight: 600;
             letter-spacing: 1px;
         }
+
+        body.horse-rolling-mode .result-table td.value.pending {
+            color: #7c3aed;
+            font-size: 18pt;
+            letter-spacing: 1.2px;
+            text-shadow: 0 1px 0 #fff, 0 0 8px rgba(236, 72, 153, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -1571,7 +1580,7 @@
         var matrixChars = '01アイウエオカキクケコサシスセソABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         var lastAutoPrintKey = '';
         var rollingMode = 'digit';
-        var horseFrames = ['🐎', '🏇', '🐴', '🏇'];
+        var horseFrames = ['🦄', '🏇', '🐎', '🐴'];
 
         function getTodayIso() {
             var now = new Date();
@@ -1644,6 +1653,7 @@
             var counter = document.getElementById('printCounter');
             if (!counter) return;
             var step = parseInt(counter.getAttribute('data-step') || '0', 10);
+            document.body.classList.toggle('horse-rolling-mode', isHorseRollingMode());
             counter.classList.toggle('horse-mode', isHorseRollingMode());
             counter.textContent = isHorseRollingMode() ? getHorseFrame(step) : String(step % 10);
             syncPendingCellsWithCounter();
