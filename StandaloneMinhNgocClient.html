@@ -208,9 +208,11 @@
       const attempts = [
         async () => await fetchTextWithTimeout(url, 14000),
         async () => await fetchAllOriginsGet(url), // allorigins/get trả JSON { contents }
+        async () => await fetchTextWithTimeout('https://thingproxy.freeboard.io/fetch/' + url, 17000),
         async () => await fetchTextWithTimeout('https://corsproxy.io/?' + encodeURIComponent(url), 17000),
         async () => await fetchTextWithTimeout('https://cors.isomorphic-git.org/' + url, 17000),
         async () => await fetchTextWithTimeout('https://api.codetabs.com/v1/proxy?quest=' + encodeURI(url), 17000),
+        async () => await fetchTextWithTimeout('https://api.codetabs.com/v1/proxy/?quest=' + encodeURI(url), 17000),
         async () => await fetchTextWithTimeout('https://r.jina.ai/http://' + url.replace(/^https?:\/\//i, ''), 17000)
       ];
 
@@ -260,7 +262,16 @@
       const out = [];
       const seen = {};
       const scope = pickExactDateBoxClient(doc, isoDate) || doc;
-      const tables = Array.from(scope.querySelectorAll('table')).filter(tb => tableHasPrizeNumbersClient(tb, map));
+      const content = scope.querySelector('div.content') || scope;
+      const bkqRoot = content.querySelector('table.bkqmiennam, div.bkqmiennam') || content;
+
+      let tables = Array.from(bkqRoot.querySelectorAll('table[class*=\"bangketquaSo\"]'))
+        .filter(tb => tableHasPrizeNumbersClient(tb, map));
+
+      if (!tables.length) {
+        tables = Array.from(bkqRoot.querySelectorAll('table'))
+          .filter(tb => tableHasPrizeNumbersClient(tb, map));
+      }
 
       tables.forEach(tb => {
         const tinhTd = tb.querySelector('td.tinh');
