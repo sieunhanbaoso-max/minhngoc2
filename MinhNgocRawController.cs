@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using System.Web;
+using System.Web.Script.Serialization;
 using lamloto.Services;
 using lamloto.Models;
 
@@ -16,6 +17,8 @@ namespace lamloto.Controllers
 {
     public class MinhNgocRawController : Controller
     {
+        private static readonly object NguoiLapSyncLock = new object();
+        private static readonly string[] NguoiLapWeekly = new[] { "Người 1", "Người 2", "Người 3", "Người 4" };
         private static readonly Dictionary<string, string> PrizeClassMap = new Dictionary<string, string>
         {
             { "DB", "giaidb" },
@@ -221,6 +224,116 @@ namespace lamloto.Controllers
             }, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public JsonResult GetNguoiLapState(string date)
+        {
+            DateTime targetDate;
+            if (!DateTime.TryParse(date, out targetDate))
+            {
+                targetDate = DateTime.Today;
+            }
+
+            var now = DateTime.Now;
+            var currentWeekStart = StartOfWeekMonday(now);
+            var targetWeekStart = StartOfWeekMonday(targetDate.Date);
+
+            NguoiLapState state;
+            lock (NguoiLapSyncLock)
+            {
+                state = LoadNguoiLapState();
+                if (state == null)
+                {
+                    state = new NguoiLapState
+                    {
+                        BaseIndex = 0,
+                        WeekStartIso = currentWeekStart.ToString("yyyy-MM-dd"),
+                        Version = 1,
+                        UpdatedAtIso = now.ToString("yyyy-MM-ddTHH:mm:ss")
+                    };
+                    SaveNguoiLapState(state);
+                }
+
+                var savedWeek = ParseIsoDate(state.WeekStartIso) ?? currentWeekStart;
+                var currentBaseIdx = NormalizeNguoiLapIdx(state.BaseIndex + WeeksBetween(savedWeek, currentWeekStart));
+
+                // tiến state tới tuần hiện tại để đồng bộ ổn định giữa client
+                if (savedWeek != currentWeekStart || state.BaseIndex != currentBaseIdx)
+                {
+                    state.BaseIndex = currentBaseIdx;
+                    state.WeekStartIso = currentWeekStart.ToString("yyyy-MM-dd");
+                    state.Version = Math.Max(1, state.Version) + 1;
+                    state.UpdatedAtIso = now.ToString("yyyy-MM-ddTHH:mm:ss");
+                    SaveNguoiLapState(state);
+                }
+            }
+
+            var currentIdx = NormalizeNguoiLapIdx(state.BaseIndex);
+            var targetIdx = NormalizeNguoiLapIdx(currentIdx + WeeksBetween(currentWeekStart, targetWeekStart));
+
+            return Json(new
+            {
+                ok = true,
+                targetDate = targetDate.ToString("yyyy-MM-dd"),
+                currentWeekStart = currentWeekStart.ToString("yyyy-MM-dd"),
+                baseIndexCurrentWeek = currentIdx,
+                baseNameCurrentWeek = NguoiLapWeekly[currentIdx],
+                targetIndex = targetIdx,
+                targetName = NguoiLapWeekly[targetIdx],
+                version = state.Version,
+                list = NguoiLapWeekly
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult SetNguoiLapState(int? baseIndex, int? version)
+        {
+            if (!baseIndex.HasValue)
+            {
+                return Json(new { ok = false, message = "Thiếu baseIndex." });
+            }
+
+            var newBaseIdx = NormalizeNguoiLapIdx(baseIndex.Value);
+            var now = DateTime.Now;
+            var currentWeekStart = StartOfWeekMonday(now);
+
+            lock (NguoiLapSyncLock)
+            {
+                var state = LoadNguoiLapState() ?? new NguoiLapState
+                {
+                    BaseIndex = 0,
+                    WeekStartIso = currentWeekStart.ToString("yyyy-MM-dd"),
+                    Version = 1,
+                    UpdatedAtIso = now.ToString("yyyy-MM-ddTHH:mm:ss")
+                };
+
+                if (version.HasValue && version.Value > 0 && state.Version != version.Value)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        conflict = true,
+                        message = "Dữ liệu người lập vừa được cập nhật ở nơi khác. Anh tải lại để đồng bộ."
+                    });
+                }
+
+                state.BaseIndex = newBaseIdx;
+                state.WeekStartIso = currentWeekStart.ToString("yyyy-MM-dd");
+                state.Version = Math.Max(1, state.Version) + 1;
+                state.UpdatedAtIso = now.ToString("yyyy-MM-ddTHH:mm:ss");
+                SaveNguoiLapState(state);
+
+                return Json(new
+                {
+                    ok = true,
+                    baseIndexCurrentWeek = state.BaseIndex,
+                    baseNameCurrentWeek = NguoiLapWeekly[state.BaseIndex],
+                    currentWeekStart = state.WeekStartIso,
+                    version = state.Version,
+                    list = NguoiLapWeekly
+                });
+            }
+        }
+
         private JsonResult JsonLarge(object data, JsonRequestBehavior behavior)
         {
             return new JsonResult
@@ -229,6 +342,63 @@ namespace lamloto.Controllers
                 JsonRequestBehavior = behavior,
                 MaxJsonLength = int.MaxValue
             };
+        }
+
+        private DateTime StartOfWeekMonday(DateTime dt)
+        {
+            var d = dt.Date;
+            var offset = ((int)d.DayOfWeek + 6) % 7; // Monday = 0
+            return d.AddDays(-offset);
+        }
+
+        private int WeeksBetween(DateTime fromWeekStart, DateTime toWeekStart)
+        {
+            return (int)Math.Round((toWeekStart.Date - fromWeekStart.Date).TotalDays / 7.0);
+        }
+
+        private int NormalizeNguoiLapIdx(int idx)
+        {
+            var mod = idx % NguoiLapWeekly.Length;
+            return mod < 0 ? mod + NguoiLapWeekly.Length : mod;
+        }
+
+        private DateTime? ParseIsoDate(string iso)
+        {
+            DateTime dt;
+            if (DateTime.TryParseExact(iso ?? "", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+                return dt.Date;
+            return null;
+        }
+
+        private string GetNguoiLapStatePath()
+        {
+            return Server.MapPath("~/App_Data/nguoi_lap_state.json");
+        }
+
+        private NguoiLapState LoadNguoiLapState()
+        {
+            var path = GetNguoiLapStatePath();
+            if (!System.IO.File.Exists(path))
+                return null;
+
+            var json = System.IO.File.ReadAllText(path);
+            if (string.IsNullOrWhiteSpace(json))
+                return null;
+
+            var serializer = new JavaScriptSerializer();
+            return serializer.Deserialize<NguoiLapState>(json);
+        }
+
+        private void SaveNguoiLapState(NguoiLapState state)
+        {
+            var path = GetNguoiLapStatePath();
+            var dir = Path.GetDirectoryName(path);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            var serializer = new JavaScriptSerializer();
+            var json = serializer.Serialize(state ?? new NguoiLapState());
+            System.IO.File.WriteAllText(path, json, Encoding.UTF8);
         }
 
         private List<ParsedRecord> FindRecordsByDate(DateTime ngay, out string sourceUrl, out List<string> logs)
@@ -1160,6 +1330,14 @@ namespace lamloto.Controllers
             public string G6 { get; set; }
             public string G7 { get; set; }
             public string G8 { get; set; }
+        }
+
+        private class NguoiLapState
+        {
+            public int BaseIndex { get; set; }
+            public string WeekStartIso { get; set; }
+            public int Version { get; set; }
+            public string UpdatedAtIso { get; set; }
         }
     }
 }
