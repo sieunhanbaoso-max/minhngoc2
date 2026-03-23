@@ -287,6 +287,7 @@
       if (!hopLe) return setStatus('warn-t', 'Đài không đúng lịch ngày đã chọn.');
 
       setStatus('warn-t', 'Đang lấy trực tiếp từ Minh Ngọc...');
+
       const urls = buildMinhNgocUrlsClient(ngay);
 
       if (location.protocol === 'file:') {
