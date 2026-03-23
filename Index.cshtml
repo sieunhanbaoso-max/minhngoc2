@@ -203,7 +203,8 @@
             color: #4b5563;
         }
 
-            .left-chip.theme-btn {
+            .left-chip.theme-btn,
+            .left-chip.mode-btn {
                 border: 0;
                 cursor: pointer;
             }
@@ -687,6 +688,11 @@
             letter-spacing: 2px;
             color: #111;
         }
+
+            .print-counter.horse-mode {
+                letter-spacing: 1px;
+                font-size: 13.5pt;
+            }
 
         .result-table {
             width: 16.53cm;
@@ -1267,7 +1273,7 @@
                         </div>
 
                         <div class="left-menu-footer">
-                            <span class="left-chip">⚙ MinhNgocRaw</span>
+                            <button type="button" id="btnRollingMode" class="left-chip mode-btn">🏇 Đổi số chạy thành ngựa chạy</button>
                             <button type="button" id="btnTheme" class="left-chip theme-btn">☀ Theme</button>
                         </div>
                     </div>
@@ -1564,6 +1570,8 @@
         var matrixCols = 0;
         var matrixChars = '01アイウエオカキクケコサシスセソABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         var lastAutoPrintKey = '';
+        var rollingMode = 'digit';
+        var horseFrames = ['🐎', '🏇', '🐴', '🏇'];
 
         function getTodayIso() {
             var now = new Date();
@@ -1604,6 +1612,41 @@
             } else {
                 stopMatrixRain();
             }
+        }
+
+        function getHorseFrame(step) {
+            var idx = Math.abs(parseInt(step || '0', 10)) % horseFrames.length;
+            return horseFrames[idx] || '🐎';
+        }
+
+        function isHorseRollingMode() {
+            return rollingMode === 'horse';
+        }
+
+        function getCurrentRollingSymbol() {
+            var el = document.getElementById('printCounter');
+            if (!el) return '0';
+            var step = parseInt(el.getAttribute('data-step') || '0', 10);
+            if (isHorseRollingMode()) return getHorseFrame(step);
+            var s = (el.textContent || '').trim();
+            return /^[0-9]$/.test(s) ? s : String(step % 10);
+        }
+
+        function updateRollingModeButton() {
+            var btn = document.getElementById('btnRollingMode');
+            if (!btn) return;
+            btn.textContent = isHorseRollingMode()
+                ? '🔢 Đổi ngựa chạy thành số chạy'
+                : '🏇 Đổi số chạy thành ngựa chạy';
+        }
+
+        function applyRollingModeUI() {
+            var counter = document.getElementById('printCounter');
+            if (!counter) return;
+            var step = parseInt(counter.getAttribute('data-step') || '0', 10);
+            counter.classList.toggle('horse-mode', isHorseRollingMode());
+            counter.textContent = isHorseRollingMode() ? getHorseFrame(step) : String(step % 10);
+            syncPendingCellsWithCounter();
         }
 
         function resizeMatrixCanvas() {
@@ -1819,11 +1862,14 @@
             }
 
             var n = 0;
-            el.textContent = String(n);
+            el.setAttribute('data-step', String(n));
+            el.textContent = isHorseRollingMode() ? getHorseFrame(n) : String(n);
+            el.classList.toggle('horse-mode', isHorseRollingMode());
 
             printCounterTimer = setInterval(function () {
                 n = (n + 1) % 10;
-                el.textContent = String(n);
+                el.setAttribute('data-step', String(n));
+                el.textContent = isHorseRollingMode() ? getHorseFrame(n) : String(n);
                 syncPendingCellsWithCounter();
             }, 350);
         }
@@ -1977,21 +2023,15 @@
             return '·'.repeat(len);
         }
 
-        function getLiveRollingDigit() {
-            var el = document.getElementById('printCounter');
-            var s = ((el || {}).textContent || '').trim();
-            return /^[0-9]$/.test(s) ? s : '0';
-        }
-
         function syncPendingCellsWithCounter() {
             if (!isLiveChecked()) return;
-            var digit = getLiveRollingDigit();
+            var symbol = getCurrentRollingSymbol();
             document.querySelectorAll('#printBody td.value.pending').forEach(function (cell) {
                 var raw = cell.getAttribute('data-raw-digits') || '';
                 var digits = parseInt(cell.getAttribute('data-digits') || '0', 10);
                 if (!digits) return;
                 var need = Math.max(0, digits - raw.length);
-                cell.textContent = raw + digit.repeat(need);
+                cell.textContent = raw + symbol.repeat(need);
             });
         }
 
@@ -2135,8 +2175,8 @@
                     td2.setAttribute('data-raw-digits', rawDigits);
                     td2.setAttribute('data-digits', String(r.digits || 0));
                     if (isLiveChecked()) {
-                        var digit = getLiveRollingDigit();
-                        displayVal = rawDigits + digit.repeat(need);
+                        var symbol = getCurrentRollingSymbol();
+                        displayVal = rawDigits + symbol.repeat(need);
                     } else {
                         displayVal = rawDigits + makePendingText(need);
                     }
@@ -2736,6 +2776,12 @@
             applyMatrixTheme(!matrixThemeOn);
         });
 
+        document.getElementById('btnRollingMode').addEventListener('click', function () {
+            rollingMode = isHorseRollingMode() ? 'digit' : 'horse';
+            updateRollingModeButton();
+            applyRollingModeUI();
+        });
+
         document.getElementById('dai').addEventListener('change', function () {
             if (liveTimer && !canRunAutoLive()) {
                 stopLiveAuto();
@@ -2823,6 +2869,8 @@
             clearBldDisplay();
             document.getElementById('chkLiveMode').checked = false;
             document.getElementById('chkLoTo4').checked = true;
+            updateRollingModeButton();
+            applyRollingModeUI();
             await napDaiTheoNgay(false);
             await loadLiclByDate();
             await loadBldByDate();
