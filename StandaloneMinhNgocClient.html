@@ -146,32 +146,6 @@
       });
     }
 
-    async function tryNapDaiFromRepoController(ngay) {
-      try {
-        const url = '/MinhNgocRaw/GetDaiTheoNgay?date=' + encodeURIComponent(ngay);
-        const resp = await fetch(url, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-        if (!resp.ok) return null;
-        const rs = await resp.json();
-        if (!rs || !rs.ok || !Array.isArray(rs.dais) || rs.dais.length === 0) return null;
-        return { thu: rs.thu || getThuText(ngay), dais: rs.dais };
-      } catch (_) {
-        return null;
-      }
-    }
-
-    async function tryLoadFromRepoController(ngay, dai) {
-      try {
-        const url = '/MinhNgocRaw/Load?date=' + encodeURIComponent(ngay) + '&dai=' + encodeURIComponent(dai);
-        const resp = await fetch(url, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-        if (!resp.ok) return null;
-        const rs = await resp.json();
-        if (!rs || rs.daiHopLeTheoThu !== true || !rs.ok || !rs.record) return null;
-        return rs;
-      } catch (_) {
-        return null;
-      }
-    }
-
     function buildMinhNgocUrlsClient(ngay) {
       const [y, m, d] = ngay.split('-');
       const slug = `${d}-${m}-${y}`;
@@ -314,16 +288,6 @@
 
       setStatus('warn-t', 'Đang lấy trực tiếp từ Minh Ngọc...');
 
-      // 1) Ưu tiên dùng đúng cấu trúc repo gốc (controller) nếu đang chạy trong app ASP.NET
-      const rsServer = await tryLoadFromRepoController(ngay, dai);
-      if (rsServer) {
-        document.getElementById('sourceUrl').textContent = rsServer.url || '';
-        document.getElementById('htmlBox').value = rsServer.html || '';
-        renderRecord(rsServer.record);
-        setStatus('ok', 'Đã lấy theo logic repo gốc qua MinhNgocRawController.');
-        return;
-      }
-
       const urls = buildMinhNgocUrlsClient(ngay);
 
       if (location.protocol === 'file:') {
@@ -351,16 +315,8 @@
     document.getElementById('btnNapDai').addEventListener('click', () => {
       const ngay = document.getElementById('ngay').value;
       if (!ngay) return setStatus('warn-t', 'Chưa chọn ngày.');
-      (async function () {
-        const fromRepo = await tryNapDaiFromRepoController(ngay);
-        if (fromRepo) {
-          renderDai(fromRepo);
-          setStatus('ok', 'Đã nạp đài theo repo gốc (MinhNgocRawController).');
-          return;
-        }
-        renderDai(getLichMienNam(ngay));
-        setStatus('ok', 'Đã nạp đài theo lịch cục bộ.');
-      })();
+      renderDai(getLichMienNam(ngay));
+      setStatus('ok', 'Đã nạp đài theo lịch cục bộ.');
     });
 
     document.getElementById('btnLoad').addEventListener('click', loadDirect);
