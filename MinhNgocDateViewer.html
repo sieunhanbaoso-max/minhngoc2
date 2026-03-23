@@ -33,9 +33,13 @@
       <div class="field">
         <button id="btnOpenNewTab">Mở tab mới</button>
       </div>
+      <div class="field">
+        <label><input id="chkAutoOpenTab" type="checkbox" checked /> Tự mở tab mới khi hiển thị</label>
+      </div>
     </div>
 
     <p id="status" class="warn">Sẵn sàng.</p>
+    <p class="warn">Lưu ý: Nếu khung trắng, website đích đang chặn iframe. Anh xem ở tab mới.</p>
     <div><strong>URL:</strong> <span id="urlView" class="mono"></span></div>
   </div>
 
@@ -79,7 +83,13 @@
 
       document.getElementById('urlView').textContent = url;
       document.getElementById('viewerFrame').src = url;
-      setStatus('ok', 'Đã nạp URL vào iframe.');
+
+      if (document.getElementById('chkAutoOpenTab').checked) {
+        window.open(url, '_blank');
+        setStatus('ok', 'Đã nạp iframe và tự mở tab mới (vì nhiều site chặn iframe).');
+      } else {
+        setStatus('ok', 'Đã nạp URL vào iframe.');
+      }
     }
 
     document.getElementById('btnLoad').addEventListener('click', loadByDate);
