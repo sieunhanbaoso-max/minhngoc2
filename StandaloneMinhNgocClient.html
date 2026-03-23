@@ -155,26 +155,76 @@
       return ngay === getTodayIso() ? [live, url1, url2] : [url1, url2, live];
     }
 
-    async function fetchHtmlClientDirect(url) {
+    async function fetchTextWithTimeout(url, timeoutMs) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), timeoutMs || 15000);
       try {
-        const direct = await fetch(url);
-        if (direct.ok) return await direct.text();
-      } catch (e) {}
-
-      const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-      const r = await fetch(proxy);
-      if (!r.ok) return '';
-      return await r.text();
+        const resp = await fetch(url, { method: 'GET', signal: ctrl.signal });
+        if (!resp.ok) return '';
+        return await resp.text();
+      } catch (_) {
+        return '';
+      } finally {
+        clearTimeout(timer);
+      }
     }
 
-    function parseRecordsFromHtmlClient(html) {
+    async function fetchHtmlClientDirect(url) {
+      const attempts = [
+        url,
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        'https://corsproxy.io/?' + encodeURIComponent(url),
+        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
+      ];
+
+      for (const u of attempts) {
+        const html = await fetchTextWithTimeout(u, 16000);
+        if (html && html.length > 3000) {
+          return html;
+        }
+      }
+      return '';
+    }
+
+    function pickExactDateBoxClient(doc, isoDate) {
+      const [y, m, d] = (isoDate || '').split('-');
+      if (!y || !m || !d) return null;
+      const dateText = `${d}/${m}/${y}`;
+      const dateSlug = `${d}-${m}-${y}`;
+      const boxes = Array.from(doc.querySelectorAll('div.box_kqxs'));
+      for (const box of boxes) {
+        const title = box.querySelector('.title');
+        if (!title) continue;
+        const links = Array.from(title.querySelectorAll('a'));
+        for (const a of links) {
+          const txt = cleanTextClient(a.textContent || '');
+          const href = a.getAttribute('href') || '';
+          if (txt === dateText || href.indexOf(dateSlug) >= 0) {
+            return box;
+          }
+        }
+      }
+      if (boxes.length === 1) return boxes[0];
+      return null;
+    }
+
+    function tableHasPrizeNumbersClient(tb, map) {
+      return Object.values(map).some(cls => {
+        const td = tb.querySelector('td.' + cls);
+        return !!(td && joinNumbersFromTdClient(td));
+      });
+    }
+
+    function parseRecordsFromHtmlClient(html, isoDate) {
       if (!html) return [];
       const doc = new DOMParser().parseFromString(html, 'text/html');
       const map = { DB: 'giaidb', G1: 'giai1', G2: 'giai2', G3: 'giai3', G4: 'giai4', G5: 'giai5', G6: 'giai6', G7: 'giai7', G8: 'giai8' };
       const out = [];
       const seen = {};
+      const scope = pickExactDateBoxClient(doc, isoDate) || doc;
+      const tables = Array.from(scope.querySelectorAll('table')).filter(tb => tableHasPrizeNumbersClient(tb, map));
 
-      Array.from(doc.querySelectorAll('table')).forEach(tb => {
+      tables.forEach(tb => {
         const tinhTd = tb.querySelector('td.tinh');
         if (!tinhTd) return;
 
@@ -183,9 +233,7 @@
 
         const rec = { Dai: dai, DB: '', G1: '', G2: '', G3: '', G4: '', G5: '', G6: '', G7: '', G8: '' };
         Object.keys(map).forEach(k => rec[k] = joinNumbersFromTdClient(tb.querySelector('td.' + map[k])));
-
-        const hasAny = rec.DB || rec.G1 || rec.G2 || rec.G3 || rec.G4 || rec.G5 || rec.G6 || rec.G7 || rec.G8;
-        if (!hasAny) return;
+        if (!(rec.DB || rec.G1 || rec.G2 || rec.G3 || rec.G4 || rec.G5 || rec.G6 || rec.G7 || rec.G8)) return;
 
         const key = normalizeKeyClient(dai);
         if (seen[key]) return;
@@ -225,11 +273,15 @@
       setStatus('warn-t', 'Đang lấy trực tiếp từ Minh Ngọc...');
       const urls = buildMinhNgocUrlsClient(ngay);
 
+      if (location.protocol === 'file:') {
+        setStatus('warn-t', 'Anh nên mở file qua http://localhost để tránh hạn chế CORS từ file://');
+      }
+
       for (const u of urls) {
         const html = await fetchHtmlClientDirect(u);
         if (!html) continue;
 
-        const records = parseRecordsFromHtmlClient(html);
+        const records = parseRecordsFromHtmlClient(html, ngay);
         const rec = records.find(x => normalizeKeyClient(x.Dai) === normalizeKeyClient(dai));
         if (!rec) continue;
 
