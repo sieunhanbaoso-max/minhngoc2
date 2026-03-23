@@ -45,6 +45,17 @@
       <div class="field">
         <button class="warn" id="btnPrint">In bảng</button>
       </div>
+      <div class="field" style="min-width:260px">
+        <label>Thư mục HTML local (same-origin)</label>
+        <input id="localDir" value="html-cache" />
+      </div>
+      <div class="field" style="min-width:220px">
+        <label><input type="checkbox" id="chkUseLocalHtml" checked /> Ưu tiên HTML local</label>
+      </div>
+      <div class="field" style="min-width:320px">
+        <label>Nạp HTML cache thủ công (.html, nhiều file)</label>
+        <input id="localHtmlFiles" type="file" multiple accept=".html,text/html" />
+      </div>
     </div>
 
     <p id="status" class="warn-t">Sẵn sàng.</p>
@@ -66,6 +77,8 @@
   </div>
 
   <script>
+    const uploadedHtmlCache = {};
+
     function getTodayIso() {
       const d = new Date();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -153,6 +166,15 @@
       const url2 = `https://www.minhngoc.net/kqxs/mien-nam/${slug}.html`;
       const live = `https://www.minhngoc.net/xo-so-truc-tiep/mien-nam.html`;
       return ngay === getTodayIso() ? [live, url1, url2] : [url1, url2, live];
+    }
+
+    function buildLocalHtmlCandidates(ngay) {
+      const slug = (ngay || '').replace(/-/g, '');
+      const dir = (document.getElementById('localDir').value || '').trim().replace(/\/+$/, '');
+      const files = [];
+      if (dir) files.push(`${dir}/${slug}.html`);
+      files.push(`${slug}.html`);
+      return files;
     }
 
     async function fetchTextWithTimeout(url, timeoutMs) {
@@ -288,6 +310,41 @@
 
       setStatus('warn-t', 'Đang lấy trực tiếp từ Minh Ngọc...');
 
+      // 0) Ưu tiên local HTML cache (theo logic script Python anh gửi)
+      const useLocal = !!document.getElementById('chkUseLocalHtml').checked;
+      if (useLocal) {
+        const slug = (ngay || '').replace(/-/g, '');
+
+        // Ưu tiên cache đã nạp thủ công từ input file
+        if (uploadedHtmlCache[slug]) {
+          const htmlUploaded = uploadedHtmlCache[slug];
+          const recordsUploaded = parseRecordsFromHtmlClient(htmlUploaded, ngay);
+          const recUploaded = recordsUploaded.find(x => normalizeKeyClient(x.Dai) === normalizeKeyClient(dai));
+          if (recUploaded) {
+            document.getElementById('sourceUrl').textContent = '[uploaded] ' + slug + '.html';
+            document.getElementById('htmlBox').value = htmlUploaded;
+            renderRecord(recUploaded);
+            setStatus('ok', 'Đã lấy từ HTML upload thủ công (không cần internet/CORS).');
+            return;
+          }
+        }
+
+        const localFiles = buildLocalHtmlCandidates(ngay);
+        for (const p of localFiles) {
+          const htmlLocal = await fetchTextWithTimeout(p, 6000);
+          if (!htmlLocal) continue;
+          const recordsLocal = parseRecordsFromHtmlClient(htmlLocal, ngay);
+          const recLocal = recordsLocal.find(x => normalizeKeyClient(x.Dai) === normalizeKeyClient(dai));
+          if (!recLocal) continue;
+
+          document.getElementById('sourceUrl').textContent = '[local] ' + p;
+          document.getElementById('htmlBox').value = htmlLocal;
+          renderRecord(recLocal);
+          setStatus('ok', 'Đã lấy từ HTML local cache (không cần internet/CORS).');
+          return;
+        }
+      }
+
       const urls = buildMinhNgocUrlsClient(ngay);
 
       if (location.protocol === 'file:') {
@@ -321,6 +378,30 @@
 
     document.getElementById('btnLoad').addEventListener('click', loadDirect);
     document.getElementById('btnPrint').addEventListener('click', () => window.print());
+    document.getElementById('localHtmlFiles').addEventListener('change', async (ev) => {
+      const files = Array.from((ev.target && ev.target.files) || []);
+      if (!files.length) return;
+
+      let loaded = 0;
+      for (const f of files) {
+        const m = (f.name || '').match(/(\d{8})/);
+        if (!m) continue;
+        const key = m[1];
+        try {
+          const txt = await f.text();
+          if (txt && txt.length > 500) {
+            uploadedHtmlCache[key] = txt;
+            loaded++;
+          }
+        } catch (_) { }
+      }
+
+      if (loaded > 0) {
+        setStatus('ok', `Đã nạp ${loaded} file HTML thủ công vào cache bộ nhớ.`);
+      } else {
+        setStatus('warn-t', 'Không tìm thấy file hợp lệ (cần tên chứa YYYYMMDD).');
+      }
+    });
 
     window.addEventListener('load', () => {
       document.getElementById('ngay').value = getTodayIso();
