@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Minh Ngọc Client-Only</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f9; color: #222; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 190px; }
+    input, select, button, textarea { font: inherit; padding: 8px 10px; }
+    button { cursor: pointer; border: 1px solid #999; border-radius: 7px; background: #f0f2f5; }
+    button.primary { background: #2563eb; color: #fff; border-color: #1d4ed8; }
+    button.warn { background: #f59e0b; color: #fff; border-color: #d97706; }
+    #status { font-weight: 700; }
+    .ok { color: #059669; }
+    .warn-t { color: #b45309; }
+    .err { color: #dc2626; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f3f4f6; }
+    .mono { font-family: Consolas, monospace; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef2ff; margin: 2px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Minh Ngọc Client-only (không cần server)</h2>
+    <div class="row">
+      <div class="field">
+        <label>Ngày</label>
+        <input type="date" id="ngay" />
+      </div>
+      <div class="field" style="min-width:250px">
+        <label>Đài</label>
+        <select id="dai"></select>
+      </div>
+      <div class="field">
+        <button id="btnNapDai">Nạp đài theo ngày</button>
+      </div>
+      <div class="field">
+        <button class="primary" id="btnLoad">Lấy kết quả trực tiếp</button>
+      </div>
+      <div class="field">
+        <button class="warn" id="btnPrint">In bảng</button>
+      </div>
+    </div>
+
+    <p id="status" class="warn-t">Sẵn sàng.</p>
+    <div><strong>Thứ:</strong> <span id="thuText"></span></div>
+    <div><strong>Danh sách đài:</strong> <span id="daiList"></span></div>
+    <div><strong>Nguồn:</strong> <span id="sourceUrl" class="mono"></span></div>
+  </div>
+
+  <div class="card">
+    <h3>Kết quả</h3>
+    <table>
+      <tbody id="resultBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>HTML nguồn (để debug)</h3>
+    <textarea id="htmlBox" rows="10" style="width:100%"></textarea>
+  </div>
+
+  <script>
+    function getTodayIso() {
+      const d = new Date();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${mm}-${dd}`;
+    }
+
+    function setStatus(type, msg) {
+      const el = document.getElementById('status');
+      el.className = type;
+      el.textContent = msg;
+    }
+
+    function normalizeKeyClient(input) {
+      if (!input) return '';
+      return input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '');
+    }
+
+    function cleanTextClient(input) {
+      return (input || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function digitsOnlyClient(input) {
+      return (input || '').replace(/[^\d]/g, '');
+    }
+
+    function joinNumbersFromTdClient(td) {
+      if (!td) return '';
+      let html = td.innerHTML || '';
+      html = html.replace(/<br\s*\/?>/gi, '|');
+      html = html.replace(/<\/(div|p|li|span)>/gi, '|');
+      html = html.replace(/<[^>]+>/g, ' ');
+      let parts = html.split('|').map(cleanTextClient).filter(Boolean);
+      let nums = parts.map(digitsOnlyClient).filter(Boolean);
+      if (nums.length > 1) return nums.join(',');
+
+      nums = [];
+      Array.from(td.childNodes || []).forEach(n => {
+        const d = digitsOnlyClient(cleanTextClient(n.textContent || ''));
+        if (d) nums.push(d);
+      });
+      if (nums.length > 1) return nums.join(',');
+
+      const m = (cleanTextClient(td.textContent || '').match(/\d+/g) || []);
+      return m.join(',');
+    }
+
+    function getThuText(isoDate) {
+      const d = new Date(isoDate + 'T00:00:00');
+      const map = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+      return map[d.getDay()];
+    }
+
+    function getLichMienNam(isoDate) {
+      const d = new Date(isoDate + 'T00:00:00');
+      switch (d.getDay()) {
+        case 1: return { thu: 'Thứ hai', dais: ['TP. HCM', 'Đồng Tháp', 'Cà Mau'] };
+        case 2: return { thu: 'Thứ ba', dais: ['Bến Tre', 'Vũng Tàu', 'Bạc Liêu'] };
+        case 3: return { thu: 'Thứ tư', dais: ['Đồng Nai', 'Cần Thơ', 'Sóc Trăng'] };
+        case 4: return { thu: 'Thứ năm', dais: ['Tây Ninh', 'An Giang', 'Bình Thuận'] };
+        case 5: return { thu: 'Thứ sáu', dais: ['Vĩnh Long', 'Bình Dương', 'Trà Vinh'] };
+        case 6: return { thu: 'Thứ bảy', dais: ['TP. HCM', 'Long An', 'Bình Phước', 'Hậu Giang'] };
+        default: return { thu: 'Chủ nhật', dais: ['Tiền Giang', 'Kiên Giang', 'Đà Lạt'] };
+      }
+    }
+
+    function renderDai(lich) {
+      document.getElementById('thuText').textContent = lich.thu;
+      document.getElementById('daiList').innerHTML = lich.dais.map(x => `<span class="pill">${x}</span>`).join(' ');
+
+      const sl = document.getElementById('dai');
+      sl.innerHTML = '<option value="">-- Chọn đài --</option>';
+      lich.dais.forEach(d => {
+        const op = document.createElement('option');
+        op.value = d;
+        op.textContent = d;
+        sl.appendChild(op);
+      });
+    }
+
+    function buildMinhNgocUrlsClient(ngay) {
+      const [y, m, d] = ngay.split('-');
+      const slug = `${d}-${m}-${y}`;
+      const url1 = `https://www.minhngoc.net/ket-qua-xo-so/mien-nam/${slug}.html`;
+      const url2 = `https://www.minhngoc.net/kqxs/mien-nam/${slug}.html`;
+      const live = `https://www.minhngoc.net/xo-so-truc-tiep/mien-nam.html`;
+      return ngay === getTodayIso() ? [live, url1, url2] : [url1, url2, live];
+    }
+
+    async function fetchHtmlClientDirect(url) {
+      try {
+        const direct = await fetch(url);
+        if (direct.ok) return await direct.text();
+      } catch (e) {}
+
+      const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      const r = await fetch(proxy);
+      if (!r.ok) return '';
+      return await r.text();
+    }
+
+    function parseRecordsFromHtmlClient(html) {
+      if (!html) return [];
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const map = { DB: 'giaidb', G1: 'giai1', G2: 'giai2', G3: 'giai3', G4: 'giai4', G5: 'giai5', G6: 'giai6', G7: 'giai7', G8: 'giai8' };
+      const out = [];
+      const seen = {};
+
+      Array.from(doc.querySelectorAll('table')).forEach(tb => {
+        const tinhTd = tb.querySelector('td.tinh');
+        if (!tinhTd) return;
+
+        const dai = cleanTextClient((tinhTd.querySelector('a') || tinhTd).textContent || '');
+        if (!dai) return;
+
+        const rec = { Dai: dai, DB: '', G1: '', G2: '', G3: '', G4: '', G5: '', G6: '', G7: '', G8: '' };
+        Object.keys(map).forEach(k => rec[k] = joinNumbersFromTdClient(tb.querySelector('td.' + map[k])));
+
+        const hasAny = rec.DB || rec.G1 || rec.G2 || rec.G3 || rec.G4 || rec.G5 || rec.G6 || rec.G7 || rec.G8;
+        if (!hasAny) return;
+
+        const key = normalizeKeyClient(dai);
+        if (seen[key]) return;
+        seen[key] = true;
+        out.push(rec);
+      });
+
+      return out;
+    }
+
+    function renderRecord(rec) {
+      const rows = [
+        ['Đài', rec.Dai],
+        ['ĐB', rec.DB],
+        ['G1', rec.G1],
+        ['G2', rec.G2],
+        ['G3', rec.G3],
+        ['G4', rec.G4],
+        ['G5', rec.G5],
+        ['G6', rec.G6],
+        ['G7', rec.G7],
+        ['G8', rec.G8]
+      ];
+      document.getElementById('resultBody').innerHTML = rows.map(r => `<tr><th>${r[0]}</th><td class="mono">${r[1] || ''}</td></tr>`).join('');
+    }
+
+    async function loadDirect() {
+      const ngay = document.getElementById('ngay').value;
+      const dai = document.getElementById('dai').value;
+      if (!ngay) return setStatus('warn-t', 'Chưa chọn ngày.');
+      if (!dai) return setStatus('warn-t', 'Chưa chọn đài.');
+
+      const lich = getLichMienNam(ngay);
+      const hopLe = lich.dais.some(x => normalizeKeyClient(x) === normalizeKeyClient(dai));
+      if (!hopLe) return setStatus('warn-t', 'Đài không đúng lịch ngày đã chọn.');
+
+      setStatus('warn-t', 'Đang lấy trực tiếp từ Minh Ngọc...');
+      const urls = buildMinhNgocUrlsClient(ngay);
+
+      for (const u of urls) {
+        const html = await fetchHtmlClientDirect(u);
+        if (!html) continue;
+
+        const records = parseRecordsFromHtmlClient(html);
+        const rec = records.find(x => normalizeKeyClient(x.Dai) === normalizeKeyClient(dai));
+        if (!rec) continue;
+
+        document.getElementById('sourceUrl').textContent = u;
+        document.getElementById('htmlBox').value = html;
+        renderRecord(rec);
+        setStatus('ok', 'Đã lấy kết quả trực tiếp từ client (không qua server).');
+        return;
+      }
+
+      setStatus('err', 'Không lấy được dữ liệu trực tiếp từ Minh Ngọc. Có thể do CORS/proxy/network.');
+    }
+
+    document.getElementById('btnNapDai').addEventListener('click', () => {
+      const ngay = document.getElementById('ngay').value;
+      if (!ngay) return setStatus('warn-t', 'Chưa chọn ngày.');
+      renderDai(getLichMienNam(ngay));
+      setStatus('ok', 'Đã nạp đài theo lịch cục bộ.');
+    });
+
+    document.getElementById('btnLoad').addEventListener('click', loadDirect);
+    document.getElementById('btnPrint').addEventListener('click', () => window.print());
+
+    window.addEventListener('load', () => {
+      document.getElementById('ngay').value = getTodayIso();
+      renderDai(getLichMienNam(getTodayIso()));
+      setStatus('warn-t', 'Sẵn sàng (client-only).');
+    });
+  </script>
+</body>
+</html>
