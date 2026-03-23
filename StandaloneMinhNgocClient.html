@@ -169,17 +169,33 @@
       }
     }
 
+    async function fetchAllOriginsGet(url) {
+      const api = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url) + '&disableCache=true';
+      const txt = await fetchTextWithTimeout(api, 18000);
+      if (!txt) return '';
+      try {
+        const obj = JSON.parse(txt);
+        return (obj && obj.contents) ? obj.contents : '';
+      } catch (_) {
+        return '';
+      }
+    }
+
     async function fetchHtmlClientDirect(url) {
+      // Dùng nhiều strategy vì mỗi proxy có format khác nhau.
       const attempts = [
-        url,
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-        'https://corsproxy.io/?' + encodeURIComponent(url),
-        'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
+        async () => await fetchTextWithTimeout(url, 14000),
+        async () => await fetchAllOriginsGet(url), // allorigins/get trả JSON { contents }
+        async () => await fetchTextWithTimeout('https://corsproxy.io/?' + encodeURIComponent(url), 17000),
+        async () => await fetchTextWithTimeout('https://cors.isomorphic-git.org/' + url, 17000),
+        async () => await fetchTextWithTimeout('https://api.codetabs.com/v1/proxy?quest=' + encodeURI(url), 17000),
+        async () => await fetchTextWithTimeout('https://r.jina.ai/http://' + url.replace(/^https?:\/\//i, ''), 17000)
       ];
 
-      for (const u of attempts) {
-        const html = await fetchTextWithTimeout(u, 16000);
-        if (html && html.length > 3000) {
+      for (const run of attempts) {
+        const html = await run();
+        const looksLikeHtml = /<html|<table|box_kqxs|giaidb/i.test(html || '');
+        if (html && html.length > 1500 && looksLikeHtml) {
           return html;
         }
       }
