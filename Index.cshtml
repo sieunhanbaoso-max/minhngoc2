@@ -696,6 +696,13 @@
                 text-shadow: 0 1px 0 #fff, 0 0 10px rgba(168, 85, 247, 0.45);
             }
 
+            .print-counter.horse-mode {
+                letter-spacing: 2px;
+                font-size: 18pt;
+                font-weight: 700;
+                text-shadow: 0 1px 0 #fff, 0 0 10px rgba(168, 85, 247, 0.45);
+            }
+
         .result-table {
             width: 16.53cm;
             border-collapse: collapse;
@@ -1627,6 +1634,42 @@
             } else {
                 stopMatrixRain();
             }
+        }
+
+        function getHorseFrame(step) {
+            var idx = Math.abs(parseInt(step || '0', 10)) % horseFrames.length;
+            return horseFrames[idx] || '🐎';
+        }
+
+        function isHorseRollingMode() {
+            return rollingMode === 'horse';
+        }
+
+        function getCurrentRollingSymbol() {
+            var el = document.getElementById('printCounter');
+            if (!el) return '0';
+            var step = parseInt(el.getAttribute('data-step') || '0', 10);
+            if (isHorseRollingMode()) return getHorseFrame(step);
+            var s = (el.textContent || '').trim();
+            return /^[0-9]$/.test(s) ? s : String(step % 10);
+        }
+
+        function updateRollingModeButton() {
+            var btn = document.getElementById('btnRollingMode');
+            if (!btn) return;
+            btn.textContent = isHorseRollingMode()
+                ? '🔢 Đổi ngựa chạy thành số chạy'
+                : '🏇 Đổi số chạy thành ngựa chạy';
+        }
+
+        function applyRollingModeUI() {
+            var counter = document.getElementById('printCounter');
+            if (!counter) return;
+            var step = parseInt(counter.getAttribute('data-step') || '0', 10);
+            document.body.classList.toggle('horse-rolling-mode', isHorseRollingMode());
+            counter.classList.toggle('horse-mode', isHorseRollingMode());
+            counter.textContent = isHorseRollingMode() ? getHorseFrame(step) : String(step % 10);
+            syncPendingCellsWithCounter();
         }
 
         function getHorseFrame(step) {
@@ -2598,6 +2641,134 @@
             return null;
         }
 
+        function normalizeKeyClient(input) {
+            if (!input) return '';
+            var lower = input.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return lower.replace(/[^a-z0-9]+/g, '');
+        }
+
+        function cleanTextClient(input) {
+            return (input || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        function digitsOnlyClient(input) {
+            return (input || '').replace(/[^\d]/g, '');
+        }
+
+        function joinNumbersFromTdClient(td) {
+            if (!td) return '';
+
+            var html = td.innerHTML || '';
+            html = html.replace(/<br\s*\/?>/gi, '|');
+            html = html.replace(/<\/(div|p|li|span)>/gi, '|');
+            html = html.replace(/<[^>]+>/g, ' ');
+
+            var parts = html.split('|').map(cleanTextClient).filter(Boolean);
+            var nums = parts.map(digitsOnlyClient).filter(Boolean);
+            if (nums.length > 1) return nums.join(',');
+
+            nums = [];
+            Array.from(td.childNodes || []).forEach(function (n) {
+                var t = cleanTextClient(n.textContent || '');
+                var d = digitsOnlyClient(t);
+                if (d) nums.push(d);
+            });
+            if (nums.length > 1) return nums.join(',');
+
+            var text = cleanTextClient(td.textContent || '');
+            var m = text.match(/\d+/g) || [];
+            return m.join(',');
+        }
+
+        function buildMinhNgocUrlsClient(ngay) {
+            var parts = (ngay || '').split('-');
+            if (parts.length !== 3) return [];
+            var slug = parts[2] + '-' + parts[1] + '-' + parts[0];
+            var url1 = 'https://www.minhngoc.net/ket-qua-xo-so/mien-nam/' + slug + '.html';
+            var url2 = 'https://www.minhngoc.net/kqxs/mien-nam/' + slug + '.html';
+            var live = 'https://www.minhngoc.net/xo-so-truc-tiep/mien-nam.html';
+            var today = getTodayIso();
+            return (ngay === today) ? [live, url1, url2] : [url1, url2, live];
+        }
+
+        async function fetchHtmlClientDirect(url) {
+            try {
+                var r1 = await fetch(url, { method: 'GET' });
+                if (r1.ok) return await r1.text();
+            } catch (_) { }
+
+            var proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+            var r2 = await fetch(proxy, { method: 'GET' });
+            if (!r2.ok) return '';
+            return await r2.text();
+        }
+
+        function parseRecordsFromHtmlClient(html) {
+            if (!html) return [];
+
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, 'text/html');
+            var map = { DB: 'giaidb', G1: 'giai1', G2: 'giai2', G3: 'giai3', G4: 'giai4', G5: 'giai5', G6: 'giai6', G7: 'giai7', G8: 'giai8' };
+            var seen = {};
+            var out = [];
+
+            Array.from(doc.querySelectorAll('table')).forEach(function (tb) {
+                var tinhTd = tb.querySelector('td.tinh');
+                if (!tinhTd) return;
+
+                var dai = cleanTextClient((tinhTd.querySelector('a') || tinhTd).textContent || '');
+                if (!dai) return;
+
+                var rec = { Dai: dai, DB: '', G1: '', G2: '', G3: '', G4: '', G5: '', G6: '', G7: '', G8: '' };
+                Object.keys(map).forEach(function (k) {
+                    rec[k] = joinNumbersFromTdClient(tb.querySelector('td.' + map[k]));
+                });
+
+                var hasAny = rec.DB || rec.G1 || rec.G2 || rec.G3 || rec.G4 || rec.G5 || rec.G6 || rec.G7 || rec.G8;
+                if (!hasAny) return;
+
+                var key = normalizeKeyClient(dai);
+                if (seen[key]) return;
+                seen[key] = true;
+                out.push(rec);
+            });
+
+            return out;
+        }
+
+        async function tryLoadClientDirectFromMinhNgoc(ngay, dai, lichRs) {
+            var urls = buildMinhNgocUrlsClient(ngay);
+            for (var i = 0; i < urls.length; i++) {
+                var u = urls[i];
+                var html = await fetchHtmlClientDirect(u);
+                if (!html) continue;
+
+                var records = parseRecordsFromHtmlClient(html);
+                if (!records.length) continue;
+
+                var target = records.find(function (x) {
+                    return normalizeKeyClient(x.Dai) === normalizeKeyClient(dai);
+                });
+                if (!target) continue;
+
+                return {
+                    ok: true,
+                    message: 'Đã lấy dữ liệu trực tiếp từ Minh Ngọc trên client.',
+                    url: u,
+                    html: html,
+                    text: (html || '').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+                    thu: (lichRs && lichRs.thu) || '',
+                    dais: (lichRs && lichRs.dais) || [],
+                    selectedDai: dai,
+                    daiHopLeTheoThu: true,
+                    logs: ['Client lấy trực tiếp từ Minh Ngọc: ' + u],
+                    record: target
+                };
+            }
+
+            return null;
+        }
+
         function updatePrintWarnBar() {
             var bar = document.getElementById('printWarnBar');
             if (!bar) return;
@@ -2676,6 +2847,13 @@
                 });
 
                 var rs = await resp.json();
+
+                if ((rs.daiHopLeTheoThu === true) && (!rs.ok || !rs.record)) {
+                    var rsClient = await tryLoadClientDirectFromMinhNgoc(ngay, dai, rs);
+                    if (rsClient && rsClient.ok) {
+                        rs = rsClient;
+                    }
+                }
 
                 if ((rs.daiHopLeTheoThu === true) && (!rs.ok || !rs.record)) {
                     var rsClient = await tryLoadClientDirectFromMinhNgoc(ngay, dai, rs);
@@ -2850,6 +3028,12 @@
 
         document.getElementById('btnTheme').addEventListener('click', function () {
             applyMatrixTheme(!matrixThemeOn);
+        });
+
+        document.getElementById('btnRollingMode').addEventListener('click', function () {
+            rollingMode = isHorseRollingMode() ? 'digit' : 'horse';
+            updateRollingModeButton();
+            applyRollingModeUI();
         });
 
         document.getElementById('btnRollingMode').addEventListener('click', function () {
